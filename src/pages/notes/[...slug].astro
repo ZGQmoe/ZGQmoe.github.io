@@ -2,20 +2,22 @@
 import { render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import Icon from "../../components/Icon.astro";
-import { ALL_COURSES, docsOf, getCourseNotes, groupNotes, type Course, type Note } from "../../utils/notes";
+import { ALL_COURSES, getCourseNotes, splitTitle, unitsOf, type Course, type Note, type Unit } from "../../utils/notes";
 
 export async function getStaticPaths() {
   const paths = [];
   for (const course of ALL_COURSES) {
     const notes = await getCourseNotes(course.slug);
-    const docs = docsOf(notes);
+    const units = unitsOf(notes);
     const readme = notes.find((n) => n.data.index);
-    paths.push({ params: { slug: course.slug }, props: { course, notes, note: readme, isLanding: true } });
-    docs.forEach((note, i) =>
-      paths.push({
-        params: { slug: note.id },
-        props: { course, notes, note, isLanding: false, prev: docs[i - 1], next: docs[i + 1] },
-      }),
+    paths.push({ params: { slug: course.slug }, props: { course, units, note: readme, isLanding: true } });
+    units.forEach((unit, i) =>
+      unit.tabs.forEach((note) =>
+        paths.push({
+          params: { slug: note.id },
+          props: { course, units, note, unit, isLanding: false, prev: units[i - 1], next: units[i + 1] },
+        }),
+      ),
     );
   }
   return paths;
@@ -23,20 +25,23 @@ export async function getStaticPaths() {
 
 interface Props {
   course: Course;
-  notes: Note[];
+  units: Unit[];
   note?: Note;
+  unit?: Unit;
   isLanding: boolean;
-  prev?: Note;
-  next?: Note;
+  prev?: Unit;
+  next?: Unit;
 }
-const { course, notes, note, isLanding, prev, next } = Astro.props;
-const groups = groupNotes(notes);
+const { course, units, note, unit, isLanding, prev, next } = Astro.props;
 const rendered = note ? await render(note) : null;
 const Content = rendered?.Content;
 const toc = (rendered?.headings ?? []).filter((h) => h.depth >= 2 && h.depth <= 3);
 const repoUrl = `https://github.com/${course.repo}`;
-const pageTitle = isLanding ? `${course.code} ${course.title}` : `${note!.data.title} · ${course.code}`;
-const current = Astro.url.pathname.replace(/\/$/, "");
+const ut = unit ? splitTitle(unit.title) : null;
+const pageTitle = isLanding
+  ? `${course.code} ${course.title}`
+  : `${unit!.title}${note!.data.tab ? " · " + note!.data.tabLabel : ""} · ${course.code}`;
+const unitHref = (u: Unit) => `/notes/${u.tabs[0].id}/`;
 ---
 
 <Base title={pageTitle} progress={!isLanding}>
@@ -50,16 +55,16 @@ const current = Astro.url.pathname.replace(/\/$/, "");
         <nav class="side-nav">
           <a href={`/notes/${course.slug}/`} class:list={{ on: isLanding }}>课程首页</a>
           {
-            groups.map((g) => (
-              <div class="grp">
-                {g.name && <div class="grp-name mono">{g.name}</div>}
-                {g.items.map((n) => (
-                  <a href={`/notes/${n.id}/`} class:list={{ on: current === `/notes/${n.id}` }}>
-                    {n.data.title}
-                  </a>
-                ))}
-              </div>
-            ))
+            units.map((u) => {
+              const t = splitTitle(u.title);
+              return (
+                <a href={unitHref(u)} class:list={["unit", { on: unit?.key === u.key }]}>
+                  <span class="u-head">{t.head}</span>
+                  {t.sub && <span class="u-sub">{t.sub}</span>}
+                  {u.tabs.length > 1 && <span class="u-tabs mono">{u.tabs.map((x) => x.data.tabLabel).join(" · ")}</span>}
+                </a>
+              );
+            })
           }
         </nav>
         <a class="back mono" href="/notes/">← 所有课程</a>
@@ -91,11 +96,27 @@ const current = Astro.url.pathname.replace(/\/$/, "");
           <header class="doc-head">
             <div class="crumb mono">
               <a href="/notes/">笔记</a> / <a href={`/notes/${course.slug}/`}>{course.code}</a>
-              {note!.data.group && <> / {note!.data.group}</>}
             </div>
-            <h1>{note!.data.title}</h1>
+            <h1>
+              {ut!.sub ? (
+                <>
+                  <span class="grad-text">{ut!.head}</span> <span class="h-sub">{ut!.sub}</span>
+                </>
+              ) : (
+                ut!.head
+              )}
+            </h1>
+            {unit!.tabs.length > 1 && (
+              <nav class="tabs" aria-label="本章内容">
+                {unit!.tabs.map((t) => (
+                  <a href={`/notes/${t.id}/`} class:list={{ on: t.id === note!.id }} aria-current={t.id === note!.id ? "page" : undefined}>
+                    {t.data.tabLabel}
+                  </a>
+                ))}
+              </nav>
+            )}
             <a class="src mono" href={note!.data.source}>
-              <Icon name="github" size={13} /> 在 GitHub 上查看源文件
+              <Icon name="github" size={13} /> 源文件
             </a>
           </header>
         )
@@ -104,20 +125,23 @@ const current = Astro.url.pathname.replace(/\/$/, "");
       {
         isLanding && (
           <div class="chapters">
-            {groups.map((g) => (
-              <section>
-                {g.name && <h2 class="section-title">{g.name}</h2>}
-                <ol>
-                  {g.items.map((n) => (
-                    <li>
-                      <a class="spot" href={`/notes/${n.id}/`}>
-                        {n.data.title}
-                      </a>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            ))}
+            <ol>
+              {units.map((u, i) => {
+                const t = splitTitle(u.title);
+                return (
+                  <li>
+                    <a class="spot" href={unitHref(u)}>
+                      <span class="n mono">{String(i + 1).padStart(2, "0")}</span>
+                      <span class="t">
+                        <b>{t.head}</b>
+                        {t.sub && <span>{t.sub}</span>}
+                      </span>
+                      {u.tabs.length > 1 && <span class="k mono">{u.tabs.map((x) => x.data.tabLabel).join(" · ")}</span>}
+                    </a>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
         )
       }
@@ -134,17 +158,17 @@ const current = Astro.url.pathname.replace(/\/$/, "");
         !isLanding && (
           <nav class="pager">
             {prev ? (
-              <a href={`/notes/${prev.id}/`}>
-                <span class="mono">← 上一篇</span>
-                {prev.data.title}
+              <a href={unitHref(prev)}>
+                <span class="mono">← 上一章</span>
+                {prev.title}
               </a>
             ) : (
               <span />
             )}
             {next && (
-              <a class="right" href={`/notes/${next.id}/`}>
-                <span class="mono">下一篇 →</span>
-                {next.data.title}
+              <a class="right" href={unitHref(next)}>
+                <span class="mono">下一章 →</span>
+                {next.title}
               </a>
             )}
           </nav>
@@ -234,6 +258,53 @@ const current = Astro.url.pathname.replace(/\/$/, "");
     background: var(--accent-soft);
     font-weight: 500;
   }
+  .unit {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .u-head {
+    color: var(--fg);
+    font-weight: 500;
+  }
+  .unit.on .u-head {
+    color: var(--accent);
+  }
+  .u-sub {
+    font-size: 13px;
+  }
+  .u-tabs {
+    font-size: 11px;
+    opacity: 0.75;
+  }
+  .h-sub {
+    font-weight: 600;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin: 4px 0 12px;
+    padding: 4px;
+    width: fit-content;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--bg) 50%, transparent);
+  }
+  .tabs a {
+    padding: 6px 16px;
+    border-radius: 9px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .tabs a:hover {
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .tabs a.on {
+    color: #fff;
+    background: linear-gradient(100deg, var(--grad-1), var(--grad-2));
+  }
   .grp {
     display: flex;
     flex-direction: column;
@@ -293,8 +364,29 @@ const current = Astro.url.pathname.replace(/\/$/, "");
     padding: 0;
     margin: 0 0 24px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 8px;
+  }
+  .chapters a {
+    display: grid !important;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    gap: 12px;
+  }
+  .chapters .n {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .chapters .t {
+    display: flex;
+    flex-direction: column;
+  }
+  .chapters .t span {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .chapters .k {
+    font-size: 11px;
+    color: var(--accent);
   }
   .chapters section + section {
     margin-top: 12px;

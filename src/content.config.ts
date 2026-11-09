@@ -22,9 +22,14 @@ const notes = defineCollection({
   schema: z.object({
     title: z.string(),
     course: z.string(),
-    order: z.number(),
-    group: z.string().default(""),
     index: z.boolean().default(false),
+    // 单元 = 一章 / 一个主题；单元内分标签页（笔记 / 例题）
+    unit: z.string(),
+    unitTitle: z.string(),
+    unitOrder: z.number(),
+    tab: z.string(),
+    tabLabel: z.string(),
+    tabOrder: z.number(),
     source: z.string().url(),
   }),
 });

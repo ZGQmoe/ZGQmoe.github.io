@@ -24,6 +24,8 @@ export interface OceanTheme {
   stops: RGB[];
   /** Strength of the gradient glow painted into the background. */
   glow: number;
+  /** Background glow colours (top-left, bottom-right, centre). Saturated, so the water reads clear rather than grey. */
+  glows: [RGB, RGB, RGB];
   /** Skin block opacity range (shadow → lit); < 1 lets the water show through. */
   blockAlpha: [number, number];
   /** Glyphs on the skin are mixed toward this colour. */
@@ -35,15 +37,20 @@ export interface OceanTheme {
 }
 
 export const THEME_DARK: OceanTheme = {
-  bg: "#04060c",
-  grid: "rgba(140,180,255,0.035)",
+  bg: "#02050f",
+  grid: "rgba(140,190,255,0.03)",
   stops: [
     [52, 74, 230],
     [46, 140, 255],
     [130, 226, 255],
   ],
-  glow: 0.16,
-  blockAlpha: [0.14, 0.62],
+  glow: 0.34,
+  glows: [
+    [40, 60, 255],
+    [0, 140, 255],
+    [30, 100, 255],
+  ],
+  blockAlpha: [0.16, 0.66],
   glyphTo: [235, 248, 255],
   glyphMix: 0.55,
   sparkle: "#ffffff",
@@ -52,15 +59,20 @@ export const THEME_DARK: OceanTheme = {
 };
 
 export const THEME_LIGHT: OceanTheme = {
-  bg: "#f6f9fd",
-  grid: "rgba(30,64,140,0.05)",
+  bg: "#f8fbff",
+  grid: "rgba(30,90,180,0.045)",
   stops: [
     [40, 60, 200],
     [24, 120, 230],
     [70, 190, 240],
   ],
-  glow: 0.1,
-  blockAlpha: [0.1, 0.5],
+  glow: 0.18,
+  glows: [
+    [80, 110, 255],
+    [40, 180, 255],
+    [120, 170, 255],
+  ],
+  blockAlpha: [0.12, 0.55],
   glyphTo: [8, 20, 70],
   glyphMix: 0.35,
   sparkle: "#0b1d4a",
@@ -91,6 +103,11 @@ import { SHARK_NODES, type Shark, type SharkKind, type World } from "./world";
 
 const ALPHA_LEVELS = 6;
 const FISH_ALPHAS = [0.28, 0.42, 0.58, 0.74, 0.9];
+// Per-species glyphs (index = SPECIES order: sardine, anchovy, silverside, mackerel, goby).
+const FISH_RIGHT = ["›", "-", "=>", "><>", "°"];
+const FISH_LEFT = ["‹", "-", "<=", "<><", "°"];
+/** How far each species is lifted from the water colour toward the glyph colour. */
+const FISH_LIFT = [0.55, 0.35, 0.7, 0.85, 0.45];
 
 // Dot colour classes: blue, green, red, pale; the last entry is the cyan wake.
 const DOT_RGB: [number, number, number][] = [
@@ -492,12 +509,19 @@ export class AsciiRenderer {
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.fillStyle = this.theme.bg;
     g.fillRect(0, 0, W, H);
-    // Faint wash of the same gradient the sharks are tinted with.
-    const { stops, glow } = this.theme;
-    const lg = g.createLinearGradient(0, 0, W * 0.62 * 1.6, H * 0.38 * 1.6);
-    stops.forEach((c, k) => lg.addColorStop(k / (stops.length - 1), rgba(c[0], c[1], c[2], glow)));
-    g.fillStyle = lg;
-    g.fillRect(0, 0, W, H);
+    // Two soft glows in the gradient's end colours: deep blue top-left, ice blue bottom-right.
+    const { glow, glows } = this.theme;
+    const glowAt = (x: number, y: number, r: number, c: RGB, a: number) => {
+      const rg = g.createRadialGradient(x, y, 0, x, y, r);
+      rg.addColorStop(0, rgba(c[0], c[1], c[2], a));
+      rg.addColorStop(1, rgba(c[0], c[1], c[2], 0));
+      g.fillStyle = rg;
+      g.fillRect(0, 0, W, H);
+    };
+    const R = Math.hypot(W, H);
+    glowAt(W * 0.08, H * 0.05, R * 0.62, glows[0], glow);
+    glowAt(W * 0.95, H * 0.98, R * 0.58, glows[1], glow * 0.75);
+    glowAt(W * 0.55, H * 0.45, R * 0.4, glows[2], glow * 0.3);
     paintGrid(g, W, H, cw, ch, dpr, this.theme.grid);
   }
 
@@ -515,7 +539,6 @@ export class AsciiRenderer {
     ctx.drawImage(this.bg, 0, 0);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    this.markFish(world);
     this.drawDots(t);
 
     ctx.font = `600 ${Math.round(ch * 0.74)}px ${this.fontFamily}`;
@@ -523,7 +546,7 @@ export class AsciiRenderer {
     ctx.textBaseline = "middle";
 
     this.drawHeat();
-    this.drawFish();
+    this.drawFish(world);
     this.drawSharks(t);
   }
 
@@ -942,24 +965,30 @@ export class AsciiRenderer {
     }
   }
 
-  private drawFish() {
-    const { ctx, cw, ch, cols, fishBuckets, width: W, height: H } = this;
+  /**
+   * Fish are drawn at their true positions (not snapped to the fine grid), in a
+   * larger font, with one glyph per species so the schools read differently:
+   * sardine ›, anchovy -, silverside =>, mackerel ><>, goby °.
+   */
+  private drawFish(world: World) {
+    const { ctx, width: W, height: H, ch } = this;
     const th = this.theme;
     const col = this.col;
-    for (let k = 0; k < fishBuckets.length; k++) {
-      const bucket = fishBuckets[k];
-      const alpha = FISH_ALPHAS[k] * th.fishAlpha;
-      for (const i of bucket) {
-        const x = (i % cols) * cw;
-        const y = ((i / cols) | 0) * ch;
-        sampleStops(th.stops, gradT(x, y, W, H), col);
-        // Fish are lighter than the sharks: lift them toward the glyph colour.
-        const [r, g, b] = col;
-        const [gr, gg, gb] = th.glyphTo;
-        ctx.fillStyle = rgba(r + (gr - r) * 0.45, g + (gg - g) * 0.45, b + (gb - b) * 0.45, alpha);
-        ctx.fillText("-", x + cw / 2, y + ch / 2 + 1);
-      }
+    const [gr, gg, gb] = th.glyphTo;
+    const size = Math.round(clamp(ch * 1.55, 12, 17));
+    ctx.font = `600 ${size}px ${this.fontFamily}`;
+    for (const f of world.fish) {
+      if (!f.alive) continue;
+      const right = f.vx >= 0;
+      const glyph = (right ? FISH_RIGHT : FISH_LEFT)[f.species] ?? "-";
+      sampleStops(th.stops, gradT(f.x, f.y, W, H), col);
+      const lift = FISH_LIFT[f.species] ?? 0.45;
+      const glint = clamp(Math.abs(f.turn) / 3.5, 0, 1);
+      const a = clamp((0.35 + 0.65 * (f.depth - 0.55) / 0.45) * th.fishAlpha + 0.3 * Math.max(glint, f.alarm), 0.2, 1);
+      ctx.fillStyle = rgba(col[0] + (gr - col[0]) * lift, col[1] + (gg - col[1]) * lift, col[2] + (gb - col[2]) * lift, a);
+      ctx.fillText(glyph, f.x, f.y);
     }
+    ctx.font = `600 ${Math.round(ch * 0.74)}px ${this.fontFamily}`;
   }
 
   private drawHeat() {
@@ -990,7 +1019,7 @@ export class AsciiRenderer {
     for (let i = 0; i < n; i++) {
       const e = energy[i];
       const kind = dotKind[i];
-      if (sharkFlag[i] || fishStamp[i] === frameId || (kind === 0 && e < 0.45)) {
+      if (sharkFlag[i] || (kind === 0 && e < 0.45)) {
         bucketOf[i] = SKIP;
         continue;
       }

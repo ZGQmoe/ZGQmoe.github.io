@@ -2,11 +2,11 @@
 import Base from "../../layouts/Base.astro";
 import PostList from "../../components/PostList.astro";
 import { byCategory, getPosts } from "../../utils/posts";
-import { ALL_COURSES, docsOf, getCourseNotes } from "../../utils/notes";
+import { ALL_COURSES, getCourseNotes, unitsOf } from "../../utils/notes";
 
 const learn = await getPosts(byCategory("learn"));
 const courses = await Promise.all(
-  ALL_COURSES.map(async (c) => ({ ...c, count: docsOf(await getCourseNotes(c.slug)).length })),
+  ALL_COURSES.map(async (c) => ({ ...c, count: unitsOf(await getCourseNotes(c.slug)).length })),
 );
 const years = [...new Set(courses.map((c) => c.year))].sort((a, b) => b - a);
 const yearLabel = (y: number) => ["", "大一", "大二", "大三", "大四"][y] ?? `Year ${y}`;
@@ -32,7 +32,7 @@ const yearLabel = (y: number) => ["", "大一", "大二", "大三", "大四"][y]
                   <a class="course spot reveal" href={`/notes/${c.slug}/`}>
                     <span class="code mono">{c.code}</span>
                     <span class="title">{c.title}</span>
-                    <span class="count mono">{c.count} 篇</span>
+                    <span class="count mono">{c.count} 章</span>
                   </a>
                 ))}
             </div>

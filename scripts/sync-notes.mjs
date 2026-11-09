@@ -1,13 +1,21 @@
 #!/usr/bin/env node
-// 把各课程笔记仓库拉到 .notes/<slug>/，并把 GitHub 风格的 Markdown 转成网站能直接渲染的格式：
-//   - ```math 代码块  → $$ … $$（KaTeX）
-//   - 指向 .md 的相对链接 → 网站路由 /notes/<slug>/<path>/
-//   - 首个 # 标题 → frontmatter.title（正文里去掉，页面自己渲染标题）
-//   - 补上 course / order / group / slug，供内容集合排序分组
-// 图片等其他文件原样复制，Markdown 里的相对图片路径保持有效。
+// 把各课程笔记仓库拉到 .notes/<slug>/，并把 GitHub 风格的 Markdown 转成网站能直接渲染的格式。
 //
-// 用法：node scripts/sync-notes.mjs            （从 GitHub 浅克隆）
-//      NOTES_SRC=/path/to/clones node scripts/sync-notes.mjs   （用本地已有的克隆，目录名为仓库名小写）
+// 组织方式：同一章（chapter-N-*.md）或同一个子目录里的文件合成一个「单元」，
+// 单元里按「笔记 / 例题」分标签页：
+//   /notes/<课程>/<单元>/           第一篇笔记
+//   /notes/<课程>/<单元>/problems/  例题（文件名含 problem / example / exercise）
+//
+// 转换：
+//   - ```math 代码块 → $$ … $$（KaTeX）
+//   - 指向 .md 的相对链接 → 对应单元 / 标签页的站内地址
+//   - 独占一行、指向仓库里交互页（.html）的链接 → 页面内嵌的交互图
+//   - <img>/![]() 引用的 SVG → 直接内联（currentColor 跟随深浅色；matplotlib 的黑白也换成 currentColor）
+//   - 其他相对路径（PNG、HTML 等）→ /notes-assets/<课程>/…
+//   - 首个 # 标题 → frontmatter.title
+//
+// 用法：node scripts/sync-notes.mjs
+//      NOTES_SRC=/path/to/clones node scripts/sync-notes.mjs   （用本地已有克隆，目录名为仓库名小写）
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -16,17 +24,17 @@ import { COURSES, EXCLUDE } from "../src/data/courses.mjs";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const OUT = path.join(ROOT, ".notes");
-// 图片等静态文件放到 public/ 下，Markdown 和 HTML 里的相对路径都改写成绝对路径
-const ASSETS = path.join(ROOT, "public", "notes-assets");
 const TMP = path.join(ROOT, ".notes-src");
+const ASSETS = path.join(ROOT, "public", "notes-assets");
 const LOCAL = process.env.NOTES_SRC;
 
-fs.rmSync(OUT, { recursive: true, force: true });
-fs.mkdirSync(OUT, { recursive: true });
-fs.rmSync(ASSETS, { recursive: true, force: true });
-fs.mkdirSync(ASSETS, { recursive: true });
+for (const d of [OUT, ASSETS]) {
+  fs.rmSync(d, { recursive: true, force: true });
+  fs.mkdirSync(d, { recursive: true });
+}
 
 const collator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
+const posix = path.posix;
 
 function fetchRepo(repo) {
   const name = repo.split("/")[1].toLowerCase();
@@ -52,86 +60,69 @@ function walk(dir, base = dir) {
   return out;
 }
 
-const docSlug = (course, rel) =>
-  `${course.slug}/${rel
-    .replace(/\.md$/i, "")
-    .replace(/(^|\/)README$/i, "$1index")
-    .toLowerCase()}`;
-
 const humanize = (s) => s.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+const firstH1 = (md) => md.match(/^#[ \t]+(.+?)[ \t]*#*[ \t]*$/m)?.[1].replace(/\*\*/g, "").trim();
+const isReadme = (f) => /(^|\/)README\.md$/i.test(f);
+const isProblems = (f) => /problem|example|exercise|question/i.test(posix.basename(f));
 
-function transform(md, course, rel) {
-  let body = md.replace(/\r\n/g, "\n");
-
-  // 去掉已有 frontmatter（这些仓库一般没有）
-  body = body.replace(/^---\n[\s\S]*?\n---\n/, "");
-
-  // ```math → $$
-  body = body.replace(/^```math[ \t]*\n([\s\S]*?)\n```[ \t]*$/gm, (_, m) => `$$\n${m.trim()}\n$$`);
-
-  // 相对 .md 链接 → 站内路由（跳过代码块里的内容不值得复杂处理，笔记里很少出现）
-  const dir = path.posix.dirname(rel);
-  body = body.replace(/\]\((?!https?:|mailto:|#)([^)\s]+?\.md)(#[^)\s]*)?\)/gi, (all, target, hash = "") => {
-    const resolved = path.posix.normalize(path.posix.join(dir, decodeURIComponent(target)));
-    if (resolved.startsWith("..")) return all;
-    return `](/notes/${docSlug(course, resolved)}/${hash})`;
-  });
-
-  // 其他相对路径（图片、交互页）→ /notes-assets/<slug>/…
-  const asset = (target) => {
-    if (/^(https?:|mailto:|#|\/|data:)/i.test(target)) return null;
-    const [p, hash = ""] = target.split("#");
-    const resolved = path.posix.normalize(path.posix.join(dir, decodeURIComponent(p)));
-    if (resolved.startsWith("..")) return null;
-    return `/notes-assets/${course.slug}/${resolved}${hash ? "#" + hash : ""}`;
-  };
-  body = body.replace(/(\]\()([^)\s]+)((?:\s+"[^"]*")?\))/g, (all, a, target, b) => {
-    const r = asset(target);
-    return r ? a + r + b : all;
-  });
-  body = body.replace(/(<(?:img|a|source|iframe)\b[^>]*?\s(?:src|href)=")([^"]+)(")/gi, (all, a, target, b) => {
-    const r = asset(target);
-    return r ? a + r + b : all;
-  });
-
-  // 标题
-  let title = "";
-  // 只取第一个一级标题（非全局匹配）
-  body = body.replace(/^#[ \t]+(.+?)[ \t]*#*[ \t]*$/m, (_, t) => {
-    title = t.replace(/\*\*/g, "").trim();
-    return "";
-  });
-  if (!title) title = humanize(path.posix.basename(rel, ".md"));
-
-  return { title, body: body.replace(/^\n+/, "") };
+/** 单元键：chapter-N / 子目录名 / 文件名 */
+function unitKey(rel) {
+  if (rel.includes("/")) return rel.split("/")[0].toLowerCase();
+  const m = posix.basename(rel).match(/^chapter[-_ ]?(\d+)/i);
+  return m ? `chapter-${m[1]}` : posix.basename(rel, ".md").toLowerCase();
 }
 
-const yaml = (v) => JSON.stringify(v);
-const manifest = [];
+// ── SVG 内联 ────────────────────────────────────────────────
+let svgCounter = 0;
+function inlineSvg(file, alt) {
+  let svg = fs.readFileSync(file, "utf8");
+  svg = svg.replace(/<\?xml[^>]*>\s*/g, "").replace(/<!DOCTYPE[^>]*>\s*/gi, "").replace(/<metadata>[\s\S]*?<\/metadata>\s*/g, "");
+  // id 加前缀，避免同页多张图互相冲突
+  const p = `s${++svgCounter}-`;
+  svg = svg
+    .replace(/\bid="([^"]+)"/g, `id="${p}$1"`)
+    .replace(/url\(#([^)]+)\)/g, `url(#${p}$1)`)
+    .replace(/(xlink:href|href)="#([^"]+)"/g, `$1="#${p}$2"`);
+  // matplotlib 等硬编码颜色：近黑 / 深灰 → currentColor（跟随正文颜色）；
+  // 纯白底板 → 去掉；很浅的底色 → 半透明的 currentColor。彩色线条保持原样。
+  const recolor = (prop, hex) => {
+    let h = hex.toLowerCase();
+    if (h.length === 3) h = [...h].map((c) => c + c).join("");
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    const grey = max - min < 40;
+    if (grey && lum < 120) return { css: `${prop}: currentColor`, attr: `${prop}="currentColor"` };
+    if (prop === "fill" && lum > 250) return { css: "fill: none", attr: 'fill="none"' };
+    if (prop === "fill" && lum > 225)
+      return { css: "fill: currentColor; fill-opacity: 0.07", attr: 'fill="currentColor" fill-opacity="0.07"' };
+    return null;
+  };
+  svg = svg
+    .replace(/(fill|stroke):\s*#([0-9a-f]{6}|[0-9a-f]{3})\b/gi, (m, prop, hex) => recolor(prop, hex)?.css ?? m)
+    .replace(/(fill|stroke)="#([0-9a-f]{6}|[0-9a-f]{3})"/gi, (m, prop, hex) => recolor(prop, hex)?.attr ?? m);
+  // 没写颜色的元素（matplotlib 的文字）默认是黑色：让根节点的 fill 继承 currentColor
+  svg = svg.replace(/<svg\b/, '<svg fill="currentColor"');
+  // 去掉固定宽高，按容器缩放
+  svg = svg.replace(/<svg\b([^>]*)>/, (m, attrs) => {
+    const a = attrs.replace(/\s(width|height)="[^"]*"/g, "");
+    return `<svg${a} role="img"${alt ? ` aria-label="${alt.replace(/"/g, "&quot;")}"` : ""}>`;
+  });
+  // HTML 块遇到空行就会结束，所以把 SVG 压成没有空行的一段
+  svg = svg.replace(/\n\s*\n/g, "\n").trim();
+  return `\n\n<figure class="nfig" data-zoom>${svg}${alt ? `<figcaption>${alt}</figcaption>` : ""}</figure>\n\n`;
+}
+
+// ── 主流程 ──────────────────────────────────────────────────
+const summary = [];
 
 for (const course of COURSES) {
   const src = fetchRepo(course.repo);
   const files = walk(src);
-  const docs = files
-    .filter((f) => /\.md$/i.test(f) && !EXCLUDE.includes(path.posix.basename(f)))
-    .sort((a, b) => {
-      // README 放最前；其余按目录、再按文件名自然排序
-      const ra = /(^|\/)README\.md$/i.test(a) ? 0 : 1;
-      const rb = /(^|\/)README\.md$/i.test(b) ? 0 : 1;
-      return ra - rb || collator.compare(a, b);
-    });
+  const pagesBase = `https://${course.repo.split("/")[0].toLowerCase()}.github.io/${course.repo.split("/")[1]}/`;
 
-  // README 里按顺序列出的链接决定章节顺序（没列出的按文件名排在后面）
-  const readme = files.find((f) => /^README\.md$/i.test(f));
-  if (readme) {
-    const listed = [...fs.readFileSync(path.join(src, readme), "utf8").matchAll(/\]\(\.?\/?([^)#\s]+\.md)/gi)].map((m) =>
-      path.posix.normalize(decodeURIComponent(m[1])),
-    );
-    const rank = (f) => (/^README\.md$/i.test(f) ? -1 : listed.includes(f) ? listed.indexOf(f) : 1e4);
-    docs.sort((a, b) => rank(a) - rank(b) || collator.compare(a, b));
-  }
-
-  // 非 Markdown 文件（图片、交互页等）原样复制到 public/notes-assets
+  // 非 Markdown 文件原样复制到 public/notes-assets
   for (const f of files) {
     if (/\.md$/i.test(f)) continue;
     const to = path.join(ASSETS, course.slug, f);
@@ -139,30 +130,158 @@ for (const course of COURSES) {
     fs.copyFileSync(path.join(src, f), to);
   }
 
-  docs.forEach((rel, order) => {
-    const raw = fs.readFileSync(path.join(src, rel), "utf8");
-    const { title, body } = transform(raw, course, rel);
-    const isIndex = /(^|\/)README\.md$/i.test(rel) && !rel.includes("/");
-    const group = rel.includes("/") ? humanize(rel.split("/")[0]) : "";
-    const fm = [
-      "---",
-      `title: ${yaml(title)}`,
-      `course: ${yaml(course.slug)}`,
-      `slug: ${yaml(docSlug(course, rel))}`,
-      `order: ${order}`,
-      `group: ${yaml(group)}`,
-      `index: ${isIndex}`,
-      `source: ${yaml(`https://github.com/${course.repo}/blob/HEAD/${rel}`)}`,
-      "---",
-      "",
-    ].join("\n");
+  let docs = files.filter((f) => /\.md$/i.test(f) && !EXCLUDE.includes(posix.basename(f)));
+  const readme = docs.find((f) => isReadme(f) && !f.includes("/"));
+  docs = docs.filter((f) => f !== readme);
+
+  // README 里列出的链接顺序优先，其余按自然顺序
+  const listed = readme
+    ? [...fs.readFileSync(path.join(src, readme), "utf8").matchAll(/\]\(\.?\/?([^)#\s]+\.md)/gi)].map((m) =>
+        posix.normalize(decodeURIComponent(m[1])),
+      )
+    : [];
+  const rank = (f) => (listed.includes(f) ? listed.indexOf(f) : 1e4);
+  docs.sort((a, b) => rank(a) - rank(b) || collator.compare(a, b));
+
+  // 第一遍：分单元、定标签和地址
+  const units = new Map();
+  docs.forEach((rel, i) => {
+    const key = unitKey(rel);
+    if (!units.has(key)) units.set(key, { key, order: units.size, docs: [] });
+    units.get(key).docs.push({ rel, i, problems: isProblems(rel), raw: fs.readFileSync(path.join(src, rel), "utf8") });
+  });
+  const route = new Map(); // rel → 站内路径（不含 /notes/ 前缀）
+  for (const u of units.values()) {
+    u.docs.sort((a, b) => Number(a.problems) - Number(b.problems) || a.i - b.i);
+    const notesDocs = u.docs.filter((d) => !d.problems);
+    const probDocs = u.docs.filter((d) => d.problems);
+    u.docs.forEach((d, t) => {
+      d.title = firstH1(d.raw) || humanize(posix.basename(d.rel, ".md"));
+      if (t === 0) d.tab = "";
+      else if (d.problems) d.tab = probDocs.length > 1 ? `problems-${probDocs.indexOf(d) + 1}` : "problems";
+      else d.tab = posix.basename(d.rel, ".md").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      d.tabLabel = d.problems
+        ? probDocs.length > 1
+          ? d.title
+          : "例题"
+        : notesDocs.length > 1
+          ? d.title
+          : "笔记";
+      d.tabOrder = t;
+      route.set(d.rel, `${course.slug}/${u.key}${d.tab ? "/" + d.tab : ""}`);
+    });
+    const lead = notesDocs[0] ?? u.docs[0];
+    u.title = lead.title;
+    // 子目录单元：标题用目录名更稳（比如 concept.md 的标题可能很长）
+    if (lead.rel.includes("/") && !firstH1(lead.raw)) u.title = humanize(u.key);
+  }
+  if (readme) route.set(readme, course.slug);
+
+  // 第二遍：转换正文
+  const transform = (md, rel) => {
+    const dir = posix.dirname(rel);
+    let body = md.replace(/\r\n/g, "\n").replace(/^---\n[\s\S]*?\n---\n/, "");
+
+    body = body.replace(/^```math[ \t]*\n([\s\S]*?)\n```[ \t]*$/gm, (_, m) => `$$\n${m.trim()}\n$$`);
+
+    // .md 链接
+    body = body.replace(/\]\((?!https?:|mailto:|#)([^)\s]+?\.md)(#[^)\s]*)?\)/gi, (all, target, hash = "") => {
+      const r = route.get(posix.normalize(posix.join(dir, decodeURIComponent(target))));
+      return r ? `](/notes/${r === course.slug ? r : r}/${hash})` : all;
+    });
+
+    // 交互页：独占一行的链接 → 内嵌
+    const toLocal = (target) => {
+      let p = target;
+      if (p.startsWith(pagesBase)) p = p.slice(pagesBase.length);
+      else if (/^(https?:|mailto:|#|\/|data:)/i.test(p)) return null;
+      else p = posix.normalize(posix.join(dir, p));
+      const [file, hash = ""] = p.split("#");
+      const resolved = decodeURIComponent(file);
+      if (resolved.startsWith("..") || !files.includes(resolved)) return null;
+      return { resolved, hash };
+    };
+    body = body.replace(/^\[([^\]]+)\]\(([^)\s]+\.html(?:#[^)\s]*)?)\)[ \t]*$/gim, (all, text, target) => {
+      const l = toLocal(target);
+      if (!l) return all;
+      return `\n<div class="lab-embed" data-src="/notes-assets/${course.slug}/${l.resolved}" data-hash="${l.hash}" data-title="${text.replace(/"/g, "&quot;")}"></div>`;
+    });
+
+    // SVG 内联：<img src="x.svg" alt="…"> 和 ![alt](x.svg)
+    body = body.replace(/<img\b([^>]*?)\bsrc="([^"]+\.svg)"([^>]*)>/gi, (all, a, target, b) => {
+      const l = toLocal(target);
+      if (!l) return all;
+      const alt = (a + b).match(/\balt="([^"]*)"/)?.[1] ?? "";
+      return inlineSvg(path.join(src, l.resolved), alt);
+    });
+    body = body.replace(/^!\[([^\]]*)\]\(([^)\s]+\.svg)\)[ \t]*$/gim, (all, alt, target) => {
+      const l = toLocal(target);
+      return l ? inlineSvg(path.join(src, l.resolved), alt) : all;
+    });
+
+    // 其他相对路径 → /notes-assets/
+    const asset = (target) => {
+      const l = toLocal(target);
+      return l ? `/notes-assets/${course.slug}/${l.resolved}${l.hash ? "#" + l.hash : ""}` : null;
+    };
+    body = body.replace(/(\]\()([^)\s]+)((?:\s+"[^"]*")?\))/g, (all, a, target, b) => {
+      const r = asset(target);
+      return r ? a + r + b : all;
+    });
+    body = body.replace(/(<(?:img|a|source|iframe)\b[^>]*?\s(?:src|href)=")([^"]+)(")/gi, (all, a, target, b) => {
+      const r = asset(target);
+      return r ? a + r + b : all;
+    });
+
+    // 去掉第一个一级标题（页面自己渲染）
+    body = body.replace(/^#[ \t]+.+$/m, "");
+    return body.replace(/^\n+/, "");
+  };
+
+  const yaml = (v) => JSON.stringify(v);
+  const write = (rel, fm, body) => {
     const to = path.join(OUT, course.slug, rel);
     fs.mkdirSync(path.dirname(to), { recursive: true });
-    fs.writeFileSync(to, fm + body);
-  });
+    const head = ["---", ...Object.entries(fm).map(([k, v]) => `${k}: ${yaml(v)}`), "---", ""].join("\n");
+    fs.writeFileSync(to, head + body);
+  };
 
-  manifest.push(`${course.code}: ${docs.length} docs`);
+  if (readme) {
+    const raw = fs.readFileSync(path.join(src, readme), "utf8");
+    write(readme, {
+      title: firstH1(raw) || course.code,
+      course: course.slug,
+      slug: course.slug,
+      index: true,
+      unit: "",
+      unitTitle: "",
+      unitOrder: -1,
+      tab: "",
+      tabLabel: "",
+      tabOrder: 0,
+      source: `https://github.com/${course.repo}/blob/HEAD/${readme}`,
+    }, transform(raw, readme));
+  }
+  for (const u of units.values()) {
+    for (const d of u.docs) {
+      write(d.rel, {
+        title: d.title,
+        course: course.slug,
+        slug: route.get(d.rel),
+        index: false,
+        unit: u.key,
+        unitTitle: u.title,
+        unitOrder: u.order,
+        tab: d.tab,
+        tabLabel: d.tabLabel,
+        tabOrder: d.tabOrder,
+        source: `https://github.com/${course.repo}/blob/HEAD/${d.rel}`,
+      }, transform(d.raw, d.rel));
+    }
+  }
+
+  summary.push(`${course.code}: ${units.size} units / ${docs.length} docs`);
 }
 
 fs.rmSync(TMP, { recursive: true, force: true });
-console.log(`[sync-notes] ${manifest.join(" · ")}`);
+console.log(`[sync-notes] ${summary.join(" · ")}`);

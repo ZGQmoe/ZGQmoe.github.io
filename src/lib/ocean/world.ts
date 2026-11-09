@@ -137,7 +137,7 @@ export class World {
   seed() {
     const { width: W, height: H } = this;
     const minSide = Math.min(W, H);
-    const baseLength = clamp(minSide * 0.36, 150, 380);
+    const baseLength = clamp(minSide * 0.62, 240, 680);
     const sharkCount = this.sharkSpecs.length;
 
     this.sharks = [];
@@ -177,7 +177,7 @@ export class World {
     // Smaller (farther) sharks draw first so the big one swims over them.
     this.sharks.sort((a, b) => a.length - b.length);
 
-    const total = this.fishCount ?? clamp(Math.round((W * H) / 3000), 120, 560);
+    const total = this.fishCount ?? clamp(Math.round((W * H) / 7000), 70, 260);
     this.fish = [];
     while (this.fish.length < total) {
       const species = pickSpecies();

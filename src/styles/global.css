@@ -320,6 +320,7 @@ html[data-ocean="dim"] main > .wrap {
 
 .mermaid {
   display: flex;
+  color: var(--fg);
   justify-content: center;
   overflow-x: auto;
   margin: 1.2em 0;
@@ -338,4 +339,211 @@ html[data-ocean="dim"] main > .wrap {
 .prose summary {
   cursor: pointer;
   font-weight: 500;
+}
+
+/* ── 笔记：图、思维导图、交互图 ─────────────────────────── */
+.nfig {
+  margin: 1.4em 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg-raise) 70%, transparent);
+  color: var(--fg);
+  cursor: zoom-in;
+  transition: border-color 0.2s;
+}
+.nfig:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+}
+.nfig svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+}
+.nfig figcaption {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+/* 位图（PNG）没法换色：深色模式下放在浅色底板上 */
+.prose img {
+  background: #fff;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.diagram-card,
+.lab-embed {
+  margin: 1.4em 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg-raise) 75%, transparent);
+  overflow: hidden;
+}
+.dc-bar,
+.lab-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.dc-title,
+.lab-title {
+  flex: 1;
+  color: var(--muted);
+}
+.lab-title {
+  color: var(--fg);
+  font-weight: 500;
+}
+.lab-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(100deg, var(--grad-1), var(--grad-2));
+}
+.dc-btn {
+  font: 12px/1 var(--mono);
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+.dc-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+}
+.dc-body {
+  position: relative;
+  padding: 10px;
+}
+.dc-body .mermaid {
+  border: 0;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+.diagram-card.collapsed .dc-body {
+  max-height: 300px;
+  overflow: hidden;
+}
+.diagram-card.collapsed .dc-body::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 80px;
+  background: linear-gradient(transparent, var(--bg-raise));
+  pointer-events: none;
+}
+.lab-body iframe {
+  display: block;
+  width: 100%;
+  height: 420px;
+  border: 0;
+  background: transparent;
+}
+.lab-embed.closed .lab-body {
+  display: none;
+}
+
+/* 全屏查看器 */
+.viewer-open,
+.viewer-open body {
+  overflow: hidden;
+}
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: v-in 0.2s ease;
+}
+@keyframes v-in {
+  from {
+    opacity: 0;
+  }
+}
+.v-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.v-bar .mono {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg);
+}
+.v-hint {
+  flex: 1;
+  color: var(--muted);
+  font-size: 12px;
+}
+.v-bar button {
+  min-width: 34px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-raise);
+  color: var(--fg);
+  font: 14px/1 var(--mono);
+  cursor: pointer;
+}
+.v-bar button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.v-stage {
+  flex: 1;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  touch-action: none;
+  color: var(--fg);
+}
+.v-stage:active {
+  cursor: grabbing;
+}
+.v-inner {
+  width: min(92vw, 1400px);
+  transform-origin: center;
+  will-change: transform;
+}
+.v-inner svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 86vh;
+}
+@media (max-width: 640px) {
+  .v-hint {
+    display: none;
+  }
+}
+/* 深色下把图里的彩色线条提亮一点 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .nfig svg {
+    filter: brightness(1.3) saturate(1.1);
+  }
+}
+:root[data-theme="dark"] .nfig svg {
+  filter: brightness(1.3) saturate(1.1);
 }

@@ -3,6 +3,7 @@ import { World, type SharkSpec } from "./world";
 
 const STEP = 1 / 60;
 const MAX_STEPS = 4;
+const FISH_SCALE = 1.9;
 
 /**
  * Wires World + AsciiRenderer to a canvas: fixed-timestep loop, resize,
@@ -72,7 +73,8 @@ export class OceanEngine {
     if (rect.width < 1 || rect.height < 1) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.renderer.resize(rect.width, rect.height, dpr);
-    this.world.resize(rect.width, rect.height, this.renderer.cellWidth, this.renderer.cellHeight);
+    // Fish are drawn bigger than the shark grid, so space them on a coarser grid.
+    this.world.resize(rect.width, rect.height, this.renderer.cellWidth * FISH_SCALE, this.renderer.cellHeight * FISH_SCALE);
     if (this.reducedMotion.matches) this.drawStill();
   }
 

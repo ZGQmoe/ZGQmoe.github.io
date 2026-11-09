@@ -10,26 +10,18 @@
 <script>
   import { OceanEngine, THEME_DARK, THEME_LIGHT, type SharkSpec } from "../lib/ocean";
 
-  // 一池子不同的鲨鱼：size 是相对最大那条的比例，越小越"远"（更透明）。
-  const ALL_SHARKS: SharkSpec[] = [
-    { kind: "greathammer", size: 1 },
-    { kind: "thresher", size: 0.9 },
-    { kind: "tiger", size: 0.84 },
-    { kind: "hammerhead", size: 0.78 },
-    { kind: "mako", size: 0.72 },
-    { kind: "zebra", size: 0.66 },
-    { kind: "nurse", size: 0.6 },
-    { kind: "classic", size: 0.56 },
-  ];
-  // 窄屏少放几条，免得挤成一团。
-  const sharkCount = innerWidth < 640 ? 3 : innerWidth < 1100 ? 5 : innerWidth < 1600 ? 6 : 8;
+  // 8 种鲨鱼里每次随机挑 3 条（手机上 2 条），大小依次递减；换页时继续游，刷新才换一批。
+  const KINDS: SharkSpec["kind"][] = ["greathammer", "hammerhead", "thresher", "tiger", "mako", "zebra", "nurse", "classic"];
+  const count = innerWidth < 700 ? 2 : 3;
+  const picked = [...KINDS].sort(() => Math.random() - 0.5).slice(0, count);
+  const sharks: SharkSpec[] = picked.map((kind, i) => ({ kind, size: [1, 0.84, 0.72][i] }));
 
   const canvas = document.querySelector<HTMLCanvasElement>("canvas.ocean");
   if (canvas) {
     const root = document.documentElement;
     const sys = matchMedia("(prefers-color-scheme: dark)");
     const isDark = () => (root.dataset.theme ? root.dataset.theme === "dark" : sys.matches);
-    const engine = new OceanEngine(canvas, ALL_SHARKS.slice(0, sharkCount), isDark() ? THEME_DARK : THEME_LIGHT);
+    const engine = new OceanEngine(canvas, sharks, isDark() ? THEME_DARK : THEME_LIGHT);
     window.addEventListener("themechange", () => engine.setTheme(isDark() ? THEME_DARK : THEME_LIGHT));
   }
 </script>
