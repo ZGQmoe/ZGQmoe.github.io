@@ -424,6 +424,7 @@ html[data-ocean="dim"] main > .wrap {
 .dc-body {
   position: relative;
   padding: 10px;
+  cursor: zoom-in;
 }
 .dc-body .mermaid {
   border: 0;

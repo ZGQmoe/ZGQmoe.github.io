@@ -292,6 +292,13 @@ document.addEventListener("click", (e) => {
     btn.textContent = el.classList.contains("closed") ? "展开" : "收起";
     return;
   }
+  // 点思维导图本身也进全屏
+  const dc = t.closest<HTMLElement>(".dc-body");
+  if (dc) {
+    const svg = dc.querySelector("svg");
+    if (svg) openViewer(svg, "Mind map");
+    return;
+  }
   const fig = t.closest<HTMLElement>("figure[data-zoom]");
   if (fig) {
     const svg = fig.querySelector("svg");
