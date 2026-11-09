@@ -1,52 +1,61 @@
 ---
 import Icon from "./Icon.astro";
+import type { Project } from "../data/projects";
 
-interface Props {
-  name: string;
-  href: string;
-  description: string;
-  tags: readonly string[];
-  status: string;
+interface Props extends Project {
+  big?: boolean;
 }
-const { name, href, description, tags, status } = Astro.props;
+const { name, description, tags, status, live, repo, kind, big = false } = Astro.props;
+const href = live || repo || "#";
 const statusLabel: Record<string, string> = { active: "维护中", paused: "暂停", archived: "已归档" };
 ---
 
-<a class="card" href={href}>
+<div class:list={["card spot reveal", { big }]}>
   <div class="top">
-    <span class="name mono">{name}</span>
-    <span class:list={["status", status]}>{statusLabel[status] ?? status}</span>
-    <span class="arrow"><Icon name="arrow" size={16} /></span>
+    {kind && <span class="kind mono">{kind}</span>}
+    <span class:list={["status", status]}>{statusLabel[status]}</span>
+    {
+      repo && (
+        <a class="repo" href={repo} aria-label={`${name} 源码`} title="源码">
+          <Icon name="github" size={15} />
+        </a>
+      )
+    }
   </div>
+  <a class="main" href={href}>
+    <span class="name mono">{name}</span>
+    <span class="go"><Icon name="arrow" size={16} /></span>
+  </a>
   <p>{description}</p>
   <div class="tags">{tags.map((t) => <span class="chip">{t}</span>)}</div>
-</a>
+</div>
 
 <style>
   .card {
-    display: block;
+    display: flex;
+    flex-direction: column;
     padding: 18px 18px 16px;
     border: 1px solid var(--line);
-    border-radius: 12px;
-    background: var(--bg-raise);
+    border-radius: 16px;
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     color: var(--fg);
-    transition: border-color 0.15s, transform 0.15s;
+    transition: transform 0.2s ease;
   }
   .card:hover {
-    border-color: var(--accent);
-    text-decoration: none;
-    transform: translateY(-2px);
+    transform: translateY(-3px);
   }
   .top {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    font-size: 12px;
   }
-  .name {
-    font-weight: 600;
+  .kind {
+    color: var(--muted);
   }
   .status {
-    font-size: 12px;
     padding: 2px 8px;
     border-radius: 999px;
     background: var(--accent-soft);
@@ -57,19 +66,55 @@ const statusLabel: Record<string, string> = { active: "维护中", paused: "暂�
     color: var(--muted);
     border: 1px solid var(--line);
   }
-  .arrow {
+  .repo {
     margin-left: auto;
     color: var(--muted);
     line-height: 0;
+    position: relative;
+    z-index: 2;
   }
-  .card:hover .arrow {
+  .repo:hover {
     color: var(--accent);
   }
+  .main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    color: var(--fg);
+  }
+  /* 整张卡片都可点（源码图标除外） */
+  .main::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .main:hover {
+    text-decoration: none;
+  }
+  .name {
+    font-weight: 600;
+    font-size: 17px;
+  }
+  .big .name {
+    font-size: 22px;
+  }
+  .go {
+    color: var(--muted);
+    line-height: 0;
+    transition: transform 0.2s;
+  }
+  .card:hover .go {
+    color: var(--accent);
+    transform: translate(2px, -2px);
+  }
   p {
-    margin: 8px 0 12px;
+    margin: 6px 0 12px;
     font-size: 14px;
     color: var(--muted);
     line-height: 1.65;
+    flex: 1;
   }
   .tags {
     display: flex;

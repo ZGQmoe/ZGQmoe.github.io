@@ -7,6 +7,10 @@ export const SITE = {
   tagline: "EEE28'@UoM",
   bio: "曼大 EEE 在读。写点代码，记点笔记，偶尔分析游戏和作品。",
   startYear: 2026,
+  /** 页脚「本站已运行 N 天」的起点 */
+  since: "2026-11-09",
+  /** 首页名字下面轮播打字的几句话 */
+  typewriter: ["EEE28'@UoM", "写代码，记笔记", "在练 maimai 配置", "偶尔分析游戏和作品"],
 };
 
 export const NAV = [
@@ -28,9 +32,8 @@ export const SOCIALS: { label: string; href: string; icon: string }[] = [
   // { label: "Email", href: "mailto:you@example.com", icon: "mail" },
 ];
 
-// 文章分类：笔记两栏（专业 / 拾遗），随笔两类（分析 / 杂文）。
+// 文章分类。专业笔记不在这里，它来自各课程仓库（src/data/courses.mjs）。
 export const CATEGORIES = {
-  course: { label: "专业笔记", section: "notes" },
   learn: { label: "学习拾遗", section: "notes" },
   analysis: { label: "分析", section: "writing" },
   essay: { label: "杂文", section: "writing" },

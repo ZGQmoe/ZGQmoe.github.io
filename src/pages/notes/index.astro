@@ -1,0 +1,117 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostList from "../../components/PostList.astro";
+import { byCategory, getPosts } from "../../utils/posts";
+import { ALL_COURSES, docsOf, getCourseNotes } from "../../utils/notes";
+
+const learn = await getPosts(byCategory("learn"));
+const courses = await Promise.all(
+  ALL_COURSES.map(async (c) => ({ ...c, count: docsOf(await getCourseNotes(c.slug)).length })),
+);
+const years = [...new Set(courses.map((c) => c.year))].sort((a, b) => b - a);
+const yearLabel = (y: number) => ["", "大一", "大二", "大三", "大四"][y] ?? `Year ${y}`;
+---
+
+<Base title="笔记">
+  <div class="wrap">
+    <header class="page-head">
+      <h1>笔记</h1>
+      <p>专业课笔记按科目整理，跟着各自的 GitHub 仓库每天同步；课外零碎学到的东西放在「学习拾遗」。</p>
+    </header>
+
+    <section>
+      <h2 class="section-title">专业笔记</h2>
+      {
+        years.map((y) => (
+          <div class="year">
+            <div class="year-label mono">{yearLabel(y)}</div>
+            <div class="courses">
+              {courses
+                .filter((c) => c.year === y)
+                .map((c) => (
+                  <a class="course spot reveal" href={`/notes/${c.slug}/`}>
+                    <span class="code mono">{c.code}</span>
+                    <span class="title">{c.title}</span>
+                    <span class="count mono">{c.count} 篇</span>
+                  </a>
+                ))}
+            </div>
+          </div>
+        ))
+      }
+    </section>
+
+    <section class="learn">
+      <h2 class="section-title">学习拾遗 <span class="n">{learn.length}</span></h2>
+      <PostList posts={learn} showCategory={false} empty="拾遗还没开始写。" />
+    </section>
+  </div>
+</Base>
+
+<style>
+  .year {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .year-label {
+    font-size: 13px;
+    color: var(--muted);
+    padding-top: 14px;
+  }
+  .courses {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .course {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--bg-raise);
+    color: var(--fg);
+    transition: transform 0.2s;
+  }
+  .course:hover {
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+  .code {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .course .code {
+    background: linear-gradient(100deg, var(--grad-1), var(--grad-3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .title {
+    font-weight: 500;
+  }
+  .count {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .learn {
+    margin-top: 40px;
+  }
+  .n {
+    margin-left: 6px;
+    color: var(--accent);
+  }
+  @media (max-width: 560px) {
+    .year {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+    .year-label {
+      padding-top: 0;
+    }
+  }
+</style>

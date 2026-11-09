@@ -1,0 +1,174 @@
+---
+import Icon from "../Icon.astro";
+import { SITE, SOCIALS } from "../../config";
+
+interface Props {
+  align?: "left" | "center";
+  /** 占满一屏还是只占大半屏 */
+  tall?: boolean;
+}
+const { align = "left", tall = true } = Astro.props;
+---
+
+<section class:list={["hero", align, { tall }]}>
+  <div class="intro">
+    <img class="avatar" src="https://github.com/ZGQmoe.png?size=160" alt="" width="72" height="72" />
+    <h1 class="mono">
+      <span>{SITE.author}</span><span class="sep">｜</span><span class="grad-text">{SITE.title}</span>
+    </h1>
+    <p class="type mono" data-typewriter={JSON.stringify(SITE.typewriter)}>
+      <span class="prompt">&gt;</span> <span class="tw-text">{SITE.typewriter[0]}</span><span class="cursor">▍</span>
+    </p>
+    <p class="bio">{SITE.bio}</p>
+    <div class="socials">
+      {
+        SOCIALS.map((s) => (
+          <a href={s.href} aria-label={s.label} title={s.label}>
+            <Icon name={s.icon} size={17} />
+            <span>{s.label}</span>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+  <a class="cue mono" href="#content" aria-label="往下看">
+    <span>scroll</span>
+    <span class="arrow">↓</span>
+  </a>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 72svh;
+    display: flex;
+    align-items: flex-end;
+    padding: 96px 20px 72px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .hero.tall {
+    min-height: 100svh;
+  }
+  .hero.center {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .intro {
+    max-width: 640px;
+    padding: 22px 24px;
+    margin-left: -24px;
+    border-radius: 20px;
+    /* 一层很淡的玻璃，让字和鲨鱼都看得清 */
+    background: color-mix(in srgb, var(--bg) 35%, transparent);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+  .center .intro {
+    margin-left: 0;
+  }
+  .avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--grad-3) 60%, transparent);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--grad-2) 12%, transparent);
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: clamp(30px, 6vw, 52px);
+    line-height: 1.15;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+  .sep {
+    color: var(--muted);
+    font-weight: 400;
+    margin: 0 0.08em;
+  }
+  .type {
+    margin: 12px 0 8px;
+    font-size: 16px;
+    min-height: 1.6em;
+    color: var(--fg);
+  }
+  .prompt {
+    color: var(--accent);
+  }
+  .cursor {
+    color: var(--accent);
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  .bio {
+    margin: 0 0 18px;
+    color: var(--muted);
+  }
+  .socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .center .socials {
+    justify-content: center;
+  }
+  .socials a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 65%, transparent);
+    color: var(--fg);
+    font: 13px/1 var(--mono);
+    transition:
+      border-color 0.2s,
+      transform 0.2s;
+  }
+  .socials a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+  .cue {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+  .cue:hover {
+    text-decoration: none;
+    color: var(--accent);
+  }
+  .arrow {
+    animation: bob 1.6s ease-in-out infinite;
+  }
+  @keyframes bob {
+    50% {
+      transform: translateY(5px);
+    }
+  }
+  .hero:not(.tall) .cue {
+    display: none;
+  }
+  @media (max-width: 640px) {
+    .intro {
+      margin-left: 0;
+      padding: 18px;
+    }
+  }
+</style>

@@ -16,46 +16,77 @@ export type RGB = [number, number, number];
 export interface OceanTheme {
   bg: string;
   grid: string;
-  /** Gradient stops along the body, snout → tail. */
-  head: RGB;
-  tail: RGB;
-  /** Glyph colours drawn on top of the skin blocks. */
-  glyphDark: string;
-  glyphLight: string;
+  /**
+   * Screen-space gradient stops, top-left → bottom-right. The same gradient
+   * tints the background glow and everything that swims, so a shark picks up
+   * the colour of the patch of water it is crossing.
+   */
+  stops: RGB[];
+  /** Strength of the gradient glow painted into the background. */
+  glow: number;
+  /** Skin block opacity range (shadow → lit); < 1 lets the water show through. */
+  blockAlpha: [number, number];
+  /** Glyphs on the skin are mixed toward this colour. */
+  glyphTo: RGB;
+  glyphMix: number;
   sparkle: string;
-  accents: string[];
-  fish: RGB;
+  fishAlpha: number;
   wake: RGB;
-  heat: RGB;
 }
 
 export const THEME_DARK: OceanTheme = {
-  bg: "#05070c",
-  grid: "rgba(150,190,255,0.05)",
-  head: [34, 86, 214],
-  tail: [150, 232, 255],
-  glyphDark: "#050a18",
-  glyphLight: "#0b1630",
-  sparkle: "#eaf6ff",
-  accents: ["#7dd3fc", "#38bdf8", "#a5f3fc", "#93c5fd", "#e0f2fe"],
-  fish: [214, 232, 255],
-  wake: [110, 200, 255],
-  heat: [125, 211, 252],
+  bg: "#04060c",
+  grid: "rgba(140,180,255,0.035)",
+  stops: [
+    [52, 74, 230],
+    [46, 140, 255],
+    [130, 226, 255],
+  ],
+  glow: 0.16,
+  blockAlpha: [0.14, 0.62],
+  glyphTo: [235, 248, 255],
+  glyphMix: 0.55,
+  sparkle: "#ffffff",
+  fishAlpha: 0.9,
+  wake: [120, 210, 255],
 };
 
 export const THEME_LIGHT: OceanTheme = {
-  bg: "#f5f8fc",
-  grid: "rgba(30,64,120,0.07)",
-  head: [22, 58, 170],
-  tail: [96, 196, 245],
-  glyphDark: "#eef6ff",
-  glyphLight: "#ffffff",
+  bg: "#f6f9fd",
+  grid: "rgba(30,64,140,0.05)",
+  stops: [
+    [40, 60, 200],
+    [24, 120, 230],
+    [70, 190, 240],
+  ],
+  glow: 0.1,
+  blockAlpha: [0.1, 0.5],
+  glyphTo: [8, 20, 70],
+  glyphMix: 0.35,
   sparkle: "#0b1d4a",
-  accents: ["#0284c7", "#1d4ed8", "#0ea5e9", "#2563eb"],
-  fish: [30, 64, 130],
-  wake: [37, 130, 220],
-  heat: [14, 116, 200],
+  fishAlpha: 0.75,
+  wake: [37, 120, 230],
 };
+
+/** Gradient position for a screen point: 0 at top-left, 1 at bottom-right. */
+function gradT(x: number, y: number, W: number, H: number) {
+  return clamp((x / W) * 0.62 + (y / H) * 0.38, 0, 1);
+}
+
+function sampleStops(stops: RGB[], t: number, out: RGB) {
+  const f = t * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(f));
+  const k = f - i;
+  const a = stops[i];
+  const b = stops[i + 1];
+  out[0] = a[0] + (b[0] - a[0]) * k;
+  out[1] = a[1] + (b[1] - a[1]) * k;
+  out[2] = a[2] + (b[2] - a[2]) * k;
+  return out;
+}
+
+const rgba = (r: number, g: number, b: number, a: number) =>
+  `rgba(${r | 0},${g | 0},${b | 0},${a.toFixed(3)})`;
 import { SHARK_NODES, type Shark, type SharkKind, type World } from "./world";
 
 const ALPHA_LEVELS = 6;
@@ -366,7 +397,7 @@ export class AsciiRenderer {
   private frameId = 0;
   /** Fish cells bucketed by brightness, so each bucket is one fillStyle. */
   private fishBuckets: number[][] = FISH_ALPHAS.map(() => []);
-  private fishStyles: string[] = [];
+  private col: RGB = [0, 0, 0];
 
   constructor(private canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext("2d", { alpha: false });
@@ -386,8 +417,7 @@ export class AsciiRenderer {
         this.dotStyles.push(`rgba(${r},${g},${b},${a.toFixed(3)})`);
       }
     }
-    const [fr, fg, fb] = this.theme.fish;
-    this.fishStyles = FISH_ALPHAS.map((a) => `rgba(${fr},${fg},${fb},${a})`);
+
   }
 
   setTheme(theme: OceanTheme) {
@@ -414,7 +444,7 @@ export class AsciiRenderer {
     this.width = width;
     this.height = height;
     this.dpr = dpr;
-    this.cw = clamp(Math.round(width / 124), 8, 13);
+    this.cw = clamp(Math.round(width / 210), 6, 9);
     this.ch = Math.round(this.cw * 1.45);
     this.cols = Math.ceil(width / this.cw);
     this.rows = Math.ceil(height / this.ch);
@@ -461,6 +491,12 @@ export class AsciiRenderer {
     const { width: W, height: H, dpr, cw, ch } = this;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.fillStyle = this.theme.bg;
+    g.fillRect(0, 0, W, H);
+    // Faint wash of the same gradient the sharks are tinted with.
+    const { stops, glow } = this.theme;
+    const lg = g.createLinearGradient(0, 0, W * 0.62 * 1.6, H * 0.38 * 1.6);
+    stops.forEach((c, k) => lg.addColorStop(k / (stops.length - 1), rgba(c[0], c[1], c[2], glow)));
+    g.fillStyle = lg;
     g.fillRect(0, 0, W, H);
     paintGrid(g, W, H, cw, ch, dpr, this.theme.grid);
   }
@@ -817,79 +853,68 @@ export class AsciiRenderer {
   }
 
   private drawSharks(t: number) {
-    const { ctx, cols, rows, cw, ch, sharkFlag, sharkShade, sharkKey, sharkDepth, sharkKind } = this;
+    const { ctx, cols, rows, cw, ch, sharkFlag, sharkShade, sharkKey, sharkDepth, width: W, height: H } = this;
+    const th = this.theme;
+    const col = this.col;
+    const [a0, a1] = th.blockAlpha;
+    const [gr, gg, gb] = th.glyphTo;
     const n = cols * rows;
     for (let i = 0; i < n; i++) {
       const flag = sharkFlag[i];
       if (!flag) continue;
-      const col = i % cols;
-      const row = (i / cols) | 0;
-      const x = col * cw;
-      const y = row * ch;
+      const cx = (i % cols) * cw;
+      const cy = ((i / cols) | 0) * ch;
       const key = sharkKey[i];
       const shade = sharkShade[i];
-      const dim = 0.7 + 0.3 * sharkDepth[i];
-      // Gradient colour for this cell: deep blue at the snout, ice blue at the tail.
-      const th = this.theme;
-      const gs = smoothstep(0, 1, this.sharkS[i]);
-      const br = th.head[0] + (th.tail[0] - th.head[0]) * gs;
-      const bg = th.head[1] + (th.tail[1] - th.head[1]) * gs;
-      const bb = th.head[2] + (th.tail[2] - th.head[2]) * gs;
-      const accents = th.accents;
+      // Nearer sharks are more opaque; far ones are ghostly.
+      const depth = 0.55 + 0.45 * sharkDepth[i];
+      // The water's colour where this cell sits.
+      sampleStops(th.stops, gradT(cx, cy, W, H), col);
+      const [r, g, b] = col;
 
-      // Colours re-roll on a staggered clock so the hide shimmers.
       const tick = Math.floor(t * 2.4 + (key % 997) / 97);
       const roll = hash3(key, tick, 7);
 
       if (flag === FLAG_EDGE) {
-        // Soft, anti-aliased silhouette: no block, just a light glyph.
         const set = shade >= 0.5 ? EDGE_HEAVY : EDGE_LIGHT;
-        const k = (0.65 + shade * 0.4) * dim;
-        ctx.fillStyle =
-          roll < 0.07
-            ? accents[key % accents.length]
-            : `rgb(${Math.round(br * k)},${Math.round(bg * k)},${Math.round(bb * k)})`;
-        ctx.fillText(set[(key >>> 8) % set.length], x + cw / 2, y + ch / 2 + 1);
+        ctx.fillStyle = roll < 0.05 ? th.sparkle : rgba(r, g, b, (0.35 + shade * 0.5) * depth);
+        ctx.fillText(set[(key >>> 8) % set.length], cx + cw / 2, cy + ch / 2 + 1);
         continue;
       }
 
-      let level: number;
+      let light: number;
       let glyph: string;
       if (flag === FLAG_RIDGE) {
-        level = 226;
+        light = 1;
         glyph = RIDGE_GLYPHS[(key >>> 8) % RIDGE_GLYPHS.length];
       } else if (flag === FLAG_EYE) {
-        level = 12;
+        light = 0;
         glyph = "o";
       } else if (flag === FLAG_MARK) {
-        level = 24 + shade * 22;
+        light = 0.15;
         glyph = MARK_GLYPHS[(key >>> 8) % MARK_GLYPHS.length];
       } else if (flag === FLAG_FIN) {
-        level = 40 + shade * 120;
+        light = 0.2 + shade * 0.6;
         glyph = FIN_GLYPHS[(key >>> 8) % FIN_GLYPHS.length];
       } else {
-        level = 46 + shade * 160;
+        light = shade;
         const jitter = ((key >>> 4) % 3) - 1;
         glyph = SKIN_RAMP[clamp(Math.floor((1 - shade) * 8.99) + jitter, 0, SKIN_RAMP.length - 1)];
       }
-      level *= dim;
-      // Light level (0..~226) scales the gradient colour; ridges/highlights push toward white.
-      const lk = 0.5 + (level / 206) * 0.62;
-      const lift = Math.max(0, lk - 1);
-      const cr = Math.min(255, br * Math.min(lk, 1) + (255 - br) * lift);
-      const cg = Math.min(255, bg * Math.min(lk, 1) + (255 - bg) * lift);
-      const cb = Math.min(255, bb * Math.min(lk, 1) + (255 - bb) * lift);
-      ctx.fillStyle = `rgb(${Math.round(cr)},${Math.round(cg)},${Math.round(cb)})`;
-      ctx.fillRect(x + 1, y + 1, cw - 1, ch - 1);
 
-      let color: string;
-      if (flag === FLAG_EYE) color = "#9aa0ad";
-      else if (flag === FLAG_MARK) color = `rgb(${Math.round(br * 0.35)},${Math.round(bg * 0.35)},${Math.round(bb * 0.35)})`;
-      else if (roll < 0.09) color = accents[key % accents.length];
-      else if (roll < 0.13) color = th.sparkle;
-      else color = shade > 0.55 ? th.glyphDark : th.glyphLight;
-      ctx.fillStyle = color;
-      ctx.fillText(glyph, x + cw / 2, y + ch / 2 + 1);
+      // Translucent block: the water and grid read through the body.
+      ctx.fillStyle = rgba(r, g, b, (a0 + (a1 - a0) * light) * depth);
+      ctx.fillRect(cx, cy, cw, ch);
+
+      if (flag === FLAG_EYE) {
+        ctx.fillStyle = rgba(gr, gg, gb, 0.95);
+      } else if (roll < 0.06) {
+        ctx.fillStyle = th.sparkle;
+      } else {
+        const m = th.glyphMix * (0.5 + 0.5 * light);
+        ctx.fillStyle = rgba(r + (gr - r) * m, g + (gg - g) * m, b + (gb - b) * m, (0.55 + 0.45 * light) * depth);
+      }
+      ctx.fillText(glyph, cx + cw / 2, cy + ch / 2 + 1);
     }
   }
 
@@ -918,13 +943,21 @@ export class AsciiRenderer {
   }
 
   private drawFish() {
-    const { ctx, cw, ch, cols, fishBuckets } = this;
-    for (let b = 0; b < fishBuckets.length; b++) {
-      const bucket = fishBuckets[b];
-      if (!bucket.length) continue;
-      ctx.fillStyle = this.fishStyles[b];
+    const { ctx, cw, ch, cols, fishBuckets, width: W, height: H } = this;
+    const th = this.theme;
+    const col = this.col;
+    for (let k = 0; k < fishBuckets.length; k++) {
+      const bucket = fishBuckets[k];
+      const alpha = FISH_ALPHAS[k] * th.fishAlpha;
       for (const i of bucket) {
-        ctx.fillText("-", (i % cols) * cw + cw / 2, ((i / cols) | 0) * ch + ch / 2 + 1);
+        const x = (i % cols) * cw;
+        const y = ((i / cols) | 0) * ch;
+        sampleStops(th.stops, gradT(x, y, W, H), col);
+        // Fish are lighter than the sharks: lift them toward the glyph colour.
+        const [r, g, b] = col;
+        const [gr, gg, gb] = th.glyphTo;
+        ctx.fillStyle = rgba(r + (gr - r) * 0.45, g + (gg - g) * 0.45, b + (gb - b) * 0.45, alpha);
+        ctx.fillText("-", x + cw / 2, y + ch / 2 + 1);
       }
     }
   }
@@ -936,7 +969,7 @@ export class AsciiRenderer {
       if (h < 0.08) continue;
       const col = i % cols;
       const row = (i / cols) | 0;
-      const [hr, hg, hb] = this.theme.heat;
+      const [hr, hg, hb] = this.theme.wake;
       ctx.fillStyle = `rgba(${hr},${hg},${hb},${Math.min(1, h > 0.5 ? h : h * 1.6).toFixed(2)})`;
       ctx.fillText(h > 0.6 ? "*" : "·", col * cw + cw / 2, row * ch + ch / 2 + 1);
     }

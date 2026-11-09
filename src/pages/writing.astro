@@ -34,17 +34,6 @@ const filters = [
   </div>
 </Base>
 
-<script>
-  const buttons = document.querySelectorAll<HTMLButtonElement>(".filters button");
-  const items = document.querySelectorAll<HTMLLIElement>(".list li[data-category]");
-  buttons.forEach((b) =>
-    b.addEventListener("click", () => {
-      buttons.forEach((x) => x.classList.toggle("on", x === b));
-      const f = b.dataset.filter;
-      items.forEach((li) => (li.hidden = f !== "all" && li.dataset.category !== f));
-    }),
-  );
-</script>
 
 <style>
   .filters {

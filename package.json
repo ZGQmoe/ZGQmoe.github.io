@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/sync-notes.mjs",
     "dev": "astro dev",
+    "sync": "node scripts/sync-notes.mjs",
+    "prebuild": "node scripts/sync-notes.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check"

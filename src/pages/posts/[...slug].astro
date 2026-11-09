@@ -19,7 +19,7 @@ const sectionHref = cat.section === "notes" ? "/notes/" : "/writing/";
 const sectionLabel = cat.section === "notes" ? "笔记" : "随笔";
 ---
 
-<Base title={post.data.title} description={post.data.description}>
+<Base title={post.data.title} description={post.data.description} progress>
   <article class="wrap">
     <header class="post-head">
       <a class="crumb mono" href={sectionHref}>{sectionLabel} / {cat.label}</a>

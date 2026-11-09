@@ -8,7 +8,8 @@ export default defineConfig({
   trailingSlash: "ignore",
   markdown: {
     remarkPlugins: [remarkMath],
-    rehypePlugins: [rehypeKatex],
+    rehypePlugins: [[rehypeKatex, { strict: false }]],
+    syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid"] },
     shikiConfig: { themes: { light: "github-light", dark: "github-dark-dimmed" } },
   },
 });

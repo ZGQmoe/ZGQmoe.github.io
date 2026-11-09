@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # 每天同步一次各课程笔记仓库（伦敦时间约凌晨 4 点）
+  schedule:
+    - cron: "17 4 * * *"
 
 permissions:
   contents: read

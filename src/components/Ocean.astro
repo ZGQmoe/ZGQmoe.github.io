@@ -1,27 +1,48 @@
 ---
-// ASCII 鲨鱼背景（stackedlol/ascii-sharks 的修改版，见 src/lib/ocean/NOTICE.md）
+// 全屏 ASCII 鲨鱼背景（stackedlol/ascii-sharks 的修改版，见 src/lib/ocean/NOTICE.md）
+// transition:persist 让鲨鱼在页面切换时继续游，不会重置。
 ---
 
-<canvas class="ocean" aria-hidden="true"></canvas>
+<div class="ocean-wrap" transition:persist="ocean" aria-hidden="true">
+  <canvas class="ocean"></canvas>
+</div>
 
 <script>
-  import { OceanEngine, THEME_DARK, THEME_LIGHT } from "../lib/ocean";
+  import { OceanEngine, THEME_DARK, THEME_LIGHT, type SharkSpec } from "../lib/ocean";
+
+  // 一池子不同的鲨鱼：size 是相对最大那条的比例，越小越"远"（更透明）。
+  const ALL_SHARKS: SharkSpec[] = [
+    { kind: "greathammer", size: 1 },
+    { kind: "thresher", size: 0.9 },
+    { kind: "tiger", size: 0.84 },
+    { kind: "hammerhead", size: 0.78 },
+    { kind: "mako", size: 0.72 },
+    { kind: "zebra", size: 0.66 },
+    { kind: "nurse", size: 0.6 },
+    { kind: "classic", size: 0.56 },
+  ];
+  // 窄屏少放几条，免得挤成一团。
+  const sharkCount = innerWidth < 640 ? 3 : innerWidth < 1100 ? 5 : innerWidth < 1600 ? 6 : 8;
 
   const canvas = document.querySelector<HTMLCanvasElement>("canvas.ocean");
   if (canvas) {
     const root = document.documentElement;
     const sys = matchMedia("(prefers-color-scheme: dark)");
     const isDark = () => (root.dataset.theme ? root.dataset.theme === "dark" : sys.matches);
-
-    const engine = new OceanEngine(canvas, undefined, isDark() ? THEME_DARK : THEME_LIGHT);
+    const engine = new OceanEngine(canvas, ALL_SHARKS.slice(0, sharkCount), isDark() ? THEME_DARK : THEME_LIGHT);
     window.addEventListener("themechange", () => engine.setTheme(isDark() ? THEME_DARK : THEME_LIGHT));
   }
 </script>
 
 <style>
-  .ocean {
-    position: absolute;
+  .ocean-wrap {
+    position: fixed;
     inset: 0;
+    z-index: -1;
+    opacity: var(--ocean-opacity, 1);
+    transition: opacity 0.6s ease;
+  }
+  .ocean {
     width: 100%;
     height: 100%;
     display: block;

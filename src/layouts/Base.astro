@@ -1,16 +1,20 @@
 ---
+import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 import "katex/dist/katex.min.css";
 import { NAV, SITE, SOCIALS } from "../config";
 import Icon from "../components/Icon.astro";
+import Ocean from "../components/Ocean.astro";
 
 interface Props {
   title?: string;
   description?: string;
-  /** 首页：头部浮在鲨鱼上方 */
-  overlayHeader?: boolean;
+  /** full：首页，鲨鱼全亮；dim：内容页，鲨鱼调暗，正文放在玻璃面板上 */
+  ocean?: "full" | "dim";
+  /** 文章页显示阅读进度条 */
+  progress?: boolean;
 }
-const { title, description = SITE.description, overlayHeader = false } = Astro.props;
+const { title, description = SITE.description, ocean = "dim", progress = false } = Astro.props;
 const pageTitle = title ? `${title} · ${SITE.title}` : `${SITE.title} · ${SITE.author}`;
 const path = Astro.url.pathname;
 const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
@@ -18,7 +22,7 @@ const year = new Date().getFullYear();
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-ocean={ocean}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -35,16 +39,27 @@ const year = new Date().getFullYear();
       rel="stylesheet"
     />
     <script is:inline>
-      try {
-        const t = localStorage.getItem("theme");
-        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
-      } catch {}
+      // 在首帧之前套上主题，避免闪烁；页面切换后再套一次（新页面的 <html> 不带 data-theme）。
+      (() => {
+        const apply = (doc) => {
+          try {
+            const t = localStorage.getItem("theme");
+            if (t === "light" || t === "dark") doc.documentElement.dataset.theme = t;
+          } catch {}
+        };
+        apply(document);
+        document.addEventListener("astro:before-swap", (e) => apply(e.newDocument));
+      })();
     </script>
+    <ClientRouter fallback="swap" />
   </head>
   <body>
-    <header class:list={["site-head", { overlay: overlayHeader }]}>
+    <Ocean />
+    {progress && <div class="progress" aria-hidden="true"></div>}
+
+    <header class:list={["site-head", { overlay: ocean === "full" }]}>
       <div class="head-inner">
-        <a class="brand mono" href="/">~/tomochan</a>
+        <a class="brand mono" href="/"><span class="prompt">~/</span>tomochan<span class="caret">_</span></a>
         <nav>
           {
             NAV.map((n) => (
@@ -61,13 +76,16 @@ const year = new Date().getFullYear();
       </div>
     </header>
 
-    <main>
+    <main transition:animate="fade">
       <slot />
     </main>
 
     <footer class="site-foot">
       <div class="wrap foot-inner">
-        <span class="mono">© {SITE.startYear === year ? year : `${SITE.startYear}–${year}`} {SITE.author}</span>
+        <div class="foot-left mono">
+          <span>© {SITE.startYear === year ? year : `${SITE.startYear}–${year}`} {SITE.author}</span>
+          <span class="muted" data-since={SITE.since}>本站已运行 <b>…</b> 天</span>
+        </div>
         <span class="foot-links">
           {
             SOCIALS.map((s) => (
@@ -80,24 +98,10 @@ const year = new Date().getFullYear();
       </div>
     </footer>
 
-    <script is:inline>
-      (() => {
-        const root = document.documentElement;
-        const sys = matchMedia("(prefers-color-scheme: dark)");
-        const current = () => root.dataset.theme || (sys.matches ? "dark" : "light");
-        const announce = () => window.dispatchEvent(new CustomEvent("themechange", { detail: current() }));
-        document.querySelector(".theme-btn")?.addEventListener("click", () => {
-          const next = current() === "dark" ? "light" : "dark";
-          root.dataset.theme = next;
-          try {
-            localStorage.setItem("theme", next);
-          } catch {}
-          announce();
-        });
-        sys.addEventListener("change", () => {
-          if (!root.dataset.theme) announce();
-        });
-      })();
+    <button class="to-top" type="button" aria-label="回到顶部" title="回到顶部">↑</button>
+
+    <script>
+      import "../scripts/fx";
     </script>
   </body>
 </html>
@@ -107,9 +111,9 @@ const year = new Date().getFullYear();
     position: sticky;
     top: 0;
     z-index: 10;
-    background: color-mix(in srgb, var(--bg) 82%, transparent);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
     border-bottom: 1px solid var(--line);
   }
   .site-head.overlay {
@@ -135,9 +139,20 @@ const year = new Date().getFullYear();
     color: var(--fg);
     white-space: nowrap;
   }
+  .brand .prompt {
+    color: var(--accent);
+  }
+  .caret {
+    color: var(--accent);
+    animation: blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
   .brand:hover {
     text-decoration: none;
-    color: var(--accent);
   }
   nav {
     display: flex;
@@ -151,18 +166,34 @@ const year = new Date().getFullYear();
     display: none;
   }
   nav a {
+    position: relative;
     color: var(--muted);
     white-space: nowrap;
     padding: 4px 0;
-    border-bottom: 2px solid transparent;
+  }
+  nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--grad-1), var(--grad-3));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
   }
   nav a:hover {
     color: var(--fg);
     text-decoration: none;
   }
+  nav a:hover::after,
+  nav a.active::after {
+    transform: scaleX(1);
+  }
   nav a.active {
     color: var(--fg);
-    border-bottom-color: var(--accent);
   }
   .theme-btn {
     flex: none;
@@ -172,13 +203,15 @@ const year = new Date().getFullYear();
     height: 32px;
     border-radius: 8px;
     border: 1px solid var(--line);
-    background: transparent;
+    background: color-mix(in srgb, var(--bg) 60%, transparent);
     color: var(--muted);
     cursor: pointer;
+    transition: transform 0.3s ease;
   }
   .theme-btn:hover {
     color: var(--accent);
     border-color: var(--accent);
+    transform: rotate(20deg);
   }
   .i-moon {
     display: none;
@@ -209,12 +242,25 @@ const year = new Date().getFullYear();
     border-top: 1px solid var(--line);
     font-size: 13px;
     color: var(--muted);
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   .foot-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 64px;
+    min-height: 64px;
+    gap: 12px;
+  }
+  .foot-left {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+  }
+  .foot-left b {
+    color: var(--accent);
+    font-weight: 600;
   }
   .foot-links {
     display: flex;
@@ -225,6 +271,49 @@ const year = new Date().getFullYear();
     line-height: 0;
   }
   .foot-links a:hover {
+    color: var(--accent);
+  }
+  .progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    z-index: 20;
+    transform-origin: left;
+    transform: scaleX(var(--read, 0));
+    background: linear-gradient(90deg, var(--grad-1), var(--grad-2), var(--grad-3));
+  }
+  .to-top {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 15;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--fg);
+    font: 600 16px/1 var(--mono);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition:
+      opacity 0.25s,
+      transform 0.25s,
+      border-color 0.2s;
+  }
+  .to-top.show {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .to-top:hover {
+    border-color: var(--accent);
     color: var(--accent);
   }
   @media (max-width: 640px) {

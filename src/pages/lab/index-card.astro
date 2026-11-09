@@ -1,0 +1,141 @@
+---
+// 版式 C「居中名片 + 目录」：名片居中，鲨鱼绕着游；往下是编号目录。
+import Base from "../../layouts/Base.astro";
+import Hero from "../../components/home/Hero.astro";
+import PostList from "../../components/PostList.astro";
+import { homeData } from "../../utils/home";
+
+const { recent, stats, projects } = await homeData();
+const rows = [
+  { n: "01", href: "/projects/", title: "项目", en: "Projects", desc: projects.map((p) => p.name).join(" · "), count: projects.length },
+  { n: "02", href: "/notes/", title: "笔记", en: "Notes", desc: `${stats.courses} 门课的专业笔记，外加学习拾遗`, count: stats.notes },
+  { n: "03", href: "/writing/", title: "随笔", en: "Writing", desc: "游戏、作品分析与杂文", count: stats.posts },
+  { n: "04", href: "/friends/", title: "友链", en: "Friends", desc: "朋友们的小站", count: stats.friends },
+  { n: "05", href: "/about/", title: "关于", en: "About", desc: "我是谁，这个站怎么搭的", count: null },
+];
+---
+
+<Base ocean="full" title="版式 C · 名片">
+  <Hero align="center" />
+
+  <div id="content" class="col">
+    <nav class="index">
+      {
+        rows.map((r) => (
+          <a class="row reveal" href={r.href}>
+            <span class="n mono">{r.n}</span>
+            <span class="t">
+              <span class="en mono">{r.en}</span>
+              {r.title}
+            </span>
+            <span class="d">{r.desc}</span>
+            <span class="c mono">{r.count ?? ""}</span>
+            <span class="arr">→</span>
+          </a>
+        ))
+      }
+    </nav>
+
+    <section class="glass latest reveal">
+      <h2 class="section-title">最近更新</h2>
+      <PostList posts={recent} />
+    </section>
+  </div>
+</Base>
+
+<style>
+  .col {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 20px;
+    scroll-margin-top: 72px;
+  }
+  .index {
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--glass);
+    backdrop-filter: blur(14px) saturate(130%);
+    -webkit-backdrop-filter: blur(14px) saturate(130%);
+  }
+  .row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 48px 120px 1fr 48px 24px;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 22px;
+    border-top: 1px solid var(--line);
+    color: var(--fg);
+    overflow: hidden;
+  }
+  .row:first-child {
+    border-top: 0;
+  }
+  .row::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--grad-2) 16%, transparent), transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.35s ease;
+    z-index: -1;
+  }
+  .row:hover {
+    text-decoration: none;
+  }
+  .row:hover::before {
+    transform: none;
+  }
+  .n {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .t {
+    display: flex;
+    flex-direction: column;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .en {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .d {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .c {
+    text-align: right;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .arr {
+    color: var(--muted);
+    transition: transform 0.25s;
+  }
+  .row:hover .arr {
+    color: var(--accent);
+    transform: translateX(4px);
+  }
+  .latest {
+    margin-top: 28px;
+    padding: 20px 22px 8px;
+  }
+  @media (max-width: 640px) {
+    .row {
+      grid-template-columns: 36px 1fr 24px;
+    }
+    .d,
+    .c {
+      display: none;
+    }
+  }
+</style>
