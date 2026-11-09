@@ -1,0 +1,30 @@
+---
+// ASCII 鲨鱼背景（stackedlol/ascii-sharks 的修改版，见 src/lib/ocean/NOTICE.md）
+---
+
+<canvas class="ocean" aria-hidden="true"></canvas>
+
+<script>
+  import { OceanEngine, THEME_DARK, THEME_LIGHT } from "../lib/ocean";
+
+  const canvas = document.querySelector<HTMLCanvasElement>("canvas.ocean");
+  if (canvas) {
+    const root = document.documentElement;
+    const sys = matchMedia("(prefers-color-scheme: dark)");
+    const isDark = () => (root.dataset.theme ? root.dataset.theme === "dark" : sys.matches);
+
+    const engine = new OceanEngine(canvas, undefined, isDark() ? THEME_DARK : THEME_LIGHT);
+    window.addEventListener("themechange", () => engine.setTheme(isDark() ? THEME_DARK : THEME_LIGHT));
+  }
+</script>
+
+<style>
+  .ocean {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  }
+</style>

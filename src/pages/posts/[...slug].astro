@@ -1,0 +1,121 @@
+---
+import { render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { CATEGORIES } from "../../config";
+import { formatDate, getPosts, tagSlug } from "../../utils/posts";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+const { post, newer, older } = Astro.props;
+const { Content } = await render(post);
+const cat = CATEGORIES[post.data.category];
+const sectionHref = cat.section === "notes" ? "/notes/" : "/writing/";
+const sectionLabel = cat.section === "notes" ? "笔记" : "随笔";
+---
+
+<Base title={post.data.title} description={post.data.description}>
+  <article class="wrap">
+    <header class="post-head">
+      <a class="crumb mono" href={sectionHref}>{sectionLabel} / {cat.label}</a>
+      <h1>{post.data.title}</h1>
+      <div class="meta mono">
+        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        {post.data.updated && <span>更新于 {formatDate(post.data.updated)}</span>}
+      </div>
+      {
+        post.data.tags.length > 0 && (
+          <div class="tags">
+            {post.data.tags.map((t) => (
+              <a class="chip" href={`/tags/${tagSlug(t)}/`}>
+                #{t}
+              </a>
+            ))}
+          </div>
+        )
+      }
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <nav class="pager">
+      {
+        newer ? (
+          <a href={`/posts/${newer.id}/`}>
+            <span class="mono">← 较新</span>
+            {newer.data.title}
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        older && (
+          <a class="right" href={`/posts/${older.id}/`}>
+            <span class="mono">较早 →</span>
+            {older.data.title}
+          </a>
+        )
+      }
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .post-head {
+    padding: 48px 0 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .crumb {
+    font-size: 13px;
+  }
+  h1 {
+    font-size: clamp(26px, 4vw, 32px);
+    margin: 8px 0 10px;
+  }
+  .meta {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .pager a {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--fg);
+  }
+  .pager a span {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .pager a:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .pager .right {
+    text-align: right;
+  }
+</style>

@@ -1,0 +1,241 @@
+---
+import "../styles/global.css";
+import "katex/dist/katex.min.css";
+import { NAV, SITE, SOCIALS } from "../config";
+import Icon from "../components/Icon.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** 首页：头部浮在鲨鱼上方 */
+  overlayHeader?: boolean;
+}
+const { title, description = SITE.description, overlayHeader = false } = Astro.props;
+const pageTitle = title ? `${title} · ${SITE.title}` : `${SITE.title} · ${SITE.author}`;
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <script is:inline>
+      try {
+        const t = localStorage.getItem("theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <header class:list={["site-head", { overlay: overlayHeader }]}>
+      <div class="head-inner">
+        <a class="brand mono" href="/">~/tomochan</a>
+        <nav>
+          {
+            NAV.map((n) => (
+              <a href={n.href} class:list={{ active: isActive(n.href) }}>
+                {n.label}
+              </a>
+            ))
+          }
+        </nav>
+        <button class="theme-btn" type="button" aria-label="切换深浅色" title="切换深浅色">
+          <span class="i-sun"><Icon name="sun" size={16} /></span>
+          <span class="i-moon"><Icon name="moon" size={16} /></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-foot">
+      <div class="wrap foot-inner">
+        <span class="mono">© {SITE.startYear === year ? year : `${SITE.startYear}–${year}`} {SITE.author}</span>
+        <span class="foot-links">
+          {
+            SOCIALS.map((s) => (
+              <a href={s.href} aria-label={s.label} title={s.label}>
+                <Icon name={s.icon} size={16} />
+              </a>
+            ))
+          }
+        </span>
+      </div>
+    </footer>
+
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        const sys = matchMedia("(prefers-color-scheme: dark)");
+        const current = () => root.dataset.theme || (sys.matches ? "dark" : "light");
+        const announce = () => window.dispatchEvent(new CustomEvent("themechange", { detail: current() }));
+        document.querySelector(".theme-btn")?.addEventListener("click", () => {
+          const next = current() === "dark" ? "light" : "dark";
+          root.dataset.theme = next;
+          try {
+            localStorage.setItem("theme", next);
+          } catch {}
+          announce();
+        });
+        sys.addEventListener("change", () => {
+          if (!root.dataset.theme) announce();
+        });
+      })();
+    </script>
+  </body>
+</html>
+
+<style>
+  .site-head {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .site-head.overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom-color: transparent;
+  }
+  .head-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .brand {
+    font-weight: 600;
+    color: var(--fg);
+    white-space: nowrap;
+  }
+  .brand:hover {
+    text-decoration: none;
+    color: var(--accent);
+  }
+  nav {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1;
+    font-size: 15px;
+  }
+  nav::-webkit-scrollbar {
+    display: none;
+  }
+  nav a {
+    color: var(--muted);
+    white-space: nowrap;
+    padding: 4px 0;
+    border-bottom: 2px solid transparent;
+  }
+  nav a:hover {
+    color: var(--fg);
+    text-decoration: none;
+  }
+  nav a.active {
+    color: var(--fg);
+    border-bottom-color: var(--accent);
+  }
+  .theme-btn {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .theme-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .i-moon {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .i-sun {
+      display: none;
+    }
+    :global(:root:not([data-theme="light"])) .i-moon {
+      display: block;
+    }
+  }
+  :global(:root[data-theme="dark"]) .i-sun {
+    display: none;
+  }
+  :global(:root[data-theme="dark"]) .i-moon {
+    display: block;
+  }
+  .i-sun,
+  .i-moon {
+    line-height: 0;
+  }
+  main {
+    min-height: calc(100vh - 56px - 80px);
+  }
+  .site-foot {
+    margin-top: 72px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .foot-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 64px;
+  }
+  .foot-links {
+    display: flex;
+    gap: 14px;
+  }
+  .foot-links a {
+    color: var(--muted);
+    line-height: 0;
+  }
+  .foot-links a:hover {
+    color: var(--accent);
+  }
+  @media (max-width: 640px) {
+    .brand {
+      display: none;
+    }
+    .head-inner {
+      gap: 12px;
+    }
+    nav {
+      gap: 14px;
+    }
+  }
+</style>

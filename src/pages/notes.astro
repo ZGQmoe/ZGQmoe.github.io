@@ -1,0 +1,37 @@
+---
+import Base from "../layouts/Base.astro";
+import PostList from "../components/PostList.astro";
+import { byCategory, getPosts } from "../utils/posts";
+
+const course = await getPosts(byCategory("course"));
+const learn = await getPosts(byCategory("learn"));
+---
+
+<Base title="笔记">
+  <div class="wrap">
+    <header class="page-head">
+      <h1>笔记</h1>
+      <p>专业课的笔记，和课外零零碎碎学到的东西。</p>
+    </header>
+
+    <section id="course">
+      <h2 class="section-title">专业笔记 <span class="count">{course.length}</span></h2>
+      <PostList posts={course} showCategory={false} empty="专业笔记还在路上。" />
+    </section>
+
+    <section id="learn">
+      <h2 class="section-title">学习拾遗 <span class="count">{learn.length}</span></h2>
+      <PostList posts={learn} showCategory={false} empty="拾遗还没开始写。" />
+    </section>
+  </div>
+</Base>
+
+<style>
+  section + section {
+    margin-top: 44px;
+  }
+  .count {
+    margin-left: 6px;
+    color: var(--accent);
+  }
+</style>

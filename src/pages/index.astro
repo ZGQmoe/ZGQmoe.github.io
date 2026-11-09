@@ -1,0 +1,133 @@
+---
+import Base from "../layouts/Base.astro";
+import Ocean from "../components/Ocean.astro";
+import Icon from "../components/Icon.astro";
+import PostList from "../components/PostList.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import { SITE, SOCIALS } from "../config";
+import { PROJECTS } from "../data/projects";
+import { getPosts } from "../utils/posts";
+
+const recent = (await getPosts()).slice(0, 6);
+const active = PROJECTS.filter((p) => p.status === "active");
+---
+
+<Base overlayHeader>
+  <section class="hero">
+    <Ocean />
+    <div class="fade" aria-hidden="true"></div>
+    <div class="intro wrap">
+      <h1 class="mono">{SITE.author}<span class="sep">｜</span>{SITE.title}</h1>
+      <p class="tagline mono">{SITE.tagline}</p>
+      <p class="bio">{SITE.bio}</p>
+      <div class="socials">
+        {
+          SOCIALS.map((s) => (
+            <a href={s.href} aria-label={s.label} title={s.label}>
+              <Icon name={s.icon} size={18} />
+              <span>{s.label}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="block">
+      <h2 class="section-title">On my desk</h2>
+      <div class="grid">{active.map((p) => <ProjectCard {...p} />)}</div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <h2 class="section-title">最近更新</h2>
+        <a class="more mono" href="/archive/">全部 →</a>
+      </div>
+      <PostList posts={recent} />
+    </section>
+  </div>
+</Base>
+
+<style>
+  .hero {
+    position: relative;
+    height: clamp(460px, 78vh, 760px);
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+  .fade {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 55%;
+    background: linear-gradient(to bottom, transparent, var(--bg) 92%);
+    pointer-events: none;
+  }
+  .intro {
+    position: relative;
+    width: 100%;
+    padding-bottom: 28px;
+    pointer-events: none;
+  }
+  .intro a {
+    pointer-events: auto;
+  }
+  h1 {
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+  .sep {
+    color: var(--accent);
+    margin: 0 0.1em;
+  }
+  .tagline {
+    margin: 4px 0 10px;
+    color: var(--accent);
+    font-size: 15px;
+  }
+  .bio {
+    margin: 0 0 16px;
+    max-width: 34em;
+    color: var(--muted);
+  }
+  .socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .socials a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    color: var(--fg);
+    font: 13px/1 var(--mono);
+  }
+  .socials a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .block {
+    margin-top: 44px;
+  }
+  .block-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .more {
+    font-size: 13px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+</style>

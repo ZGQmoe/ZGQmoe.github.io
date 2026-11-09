@@ -1,0 +1,79 @@
+---
+import Icon from "./Icon.astro";
+
+interface Props {
+  name: string;
+  href: string;
+  description: string;
+  tags: readonly string[];
+  status: string;
+}
+const { name, href, description, tags, status } = Astro.props;
+const statusLabel: Record<string, string> = { active: "维护中", paused: "暂停", archived: "已归档" };
+---
+
+<a class="card" href={href}>
+  <div class="top">
+    <span class="name mono">{name}</span>
+    <span class:list={["status", status]}>{statusLabel[status] ?? status}</span>
+    <span class="arrow"><Icon name="arrow" size={16} /></span>
+  </div>
+  <p>{description}</p>
+  <div class="tags">{tags.map((t) => <span class="chip">{t}</span>)}</div>
+</a>
+
+<style>
+  .card {
+    display: block;
+    padding: 18px 18px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--bg-raise);
+    color: var(--fg);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+  .top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .name {
+    font-weight: 600;
+  }
+  .status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .status:not(.active) {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .arrow {
+    margin-left: auto;
+    color: var(--muted);
+    line-height: 0;
+  }
+  .card:hover .arrow {
+    color: var(--accent);
+  }
+  p {
+    margin: 8px 0 12px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+</style>

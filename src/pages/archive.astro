@@ -1,0 +1,66 @@
+---
+import Base from "../layouts/Base.astro";
+import PostList from "../components/PostList.astro";
+import { getPosts, tagSlug } from "../utils/posts";
+
+const posts = await getPosts();
+const years = [...new Set(posts.map((p) => p.data.date.getFullYear()))];
+const tagCount = new Map<string, number>();
+posts.forEach((p) => p.data.tags.forEach((t) => tagCount.set(t, (tagCount.get(t) ?? 0) + 1)));
+const tags = [...tagCount.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<Base title="归档">
+  <div class="wrap">
+    <header class="page-head">
+      <h1>归档</h1>
+      <p>共 {posts.length} 篇。</p>
+    </header>
+
+    {
+      tags.length > 0 && (
+        <section class="tags">
+          <h2 class="section-title">标签</h2>
+          <div class="tag-cloud">
+            {tags.map(([t, n]) => (
+              <a class="chip" href={`/tags/${tagSlug(t)}/`}>
+                {t} <span class="n">{n}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      years.length === 0 ? (
+        <p class="empty">还没有文章。</p>
+      ) : (
+        years.map((y) => (
+          <section class="year">
+            <h2 class="section-title">{y}</h2>
+            <PostList posts={posts.filter((p) => p.data.date.getFullYear() === y)} />
+          </section>
+        ))
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .tags {
+    margin-bottom: 36px;
+  }
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .n {
+    color: var(--accent);
+    margin-left: 2px;
+  }
+  .year + .year {
+    margin-top: 36px;
+  }
+</style>

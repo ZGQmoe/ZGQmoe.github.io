@@ -1,0 +1,46 @@
+---
+import Base from "../layouts/Base.astro";
+import Icon from "../components/Icon.astro";
+import { SOCIALS } from "../config";
+---
+
+<Base title="关于">
+  <div class="wrap">
+    <header class="page-head">
+      <h1>关于</h1>
+    </header>
+    <div class="prose">
+      <p>你好，我是 Guanqi，网名 TOMOchan。现在在曼彻斯特大学读电子电气工程（EEE），2028 届。</p>
+      <p>这里放我在做的项目、课程笔记、课外学到的小东西，还有对游戏和作品的一些分析和杂文。</p>
+      <h2>这个站</h2>
+      <p>
+        用 <a href="https://astro.build">Astro</a> 搭建，托管在 GitHub Pages。首页的 ASCII 鲨鱼来自
+        <a href="https://github.com/stackedlol/ascii-sharks">stackedlol/ascii-sharks</a>（MIT），换成了蓝色渐变配色。
+      </p>
+    </div>
+    <div class="links">
+      {
+        SOCIALS.map((s) => (
+          <a class="chip" href={s.href}>
+            <Icon name={s.icon} size={14} /> {s.label}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</Base>
+
+<style>
+  .links {
+    display: flex;
+    gap: 8px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .links a {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 12px;
+  }
+</style>
