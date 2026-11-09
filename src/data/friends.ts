@@ -5,6 +5,7 @@ export const FRIEND_GROUPS: { title: string; friends: Friend[] }[] = [
   {
     title: "朋友们",
     friends: [
+      { name: "txymcn", href: "https://txymcn.github.io/", description: "powered by ethanol", avatar: "/friends/txymcn.jpg" },
       // { name: "某某", href: "https://example.com", description: "一句话介绍", avatar: "https://example.com/avatar.png" },
     ],
   },
