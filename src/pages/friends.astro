@@ -75,11 +75,12 @@ avatar: ${MY_CARD.avatar}`}</pre>
   }
   img,
   .ph {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
     flex: none;
-    object-fit: cover;
+    /* 头像按原图完整显示，不裁剪 */
+    object-fit: contain;
   }
   .ph {
     display: grid;
