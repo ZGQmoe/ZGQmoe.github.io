@@ -5,3 +5,4 @@ dist/
 .notes/
 .notes-src/
 public/notes-assets/
+public/notes-version.json

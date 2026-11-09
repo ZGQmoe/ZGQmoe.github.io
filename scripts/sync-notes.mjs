@@ -116,9 +116,17 @@ function inlineSvg(file, alt) {
 
 // ── 主流程 ──────────────────────────────────────────────────
 const summary = [];
+// 记录本次用到的每个笔记仓库的提交，部署后在 /notes-version.json 里，
+// 定时任务拿它和仓库最新提交比较，没变就不重新构建。
+const versions = {};
 
 for (const course of COURSES) {
   const src = fetchRepo(course.repo);
+  try {
+    versions[course.repo] = execFileSync("git", ["-C", src, "rev-parse", "HEAD"]).toString().trim();
+  } catch {
+    versions[course.repo] = "unknown";
+  }
   const files = walk(src);
   const pagesBase = `https://${course.repo.split("/")[0].toLowerCase()}.github.io/${course.repo.split("/")[1]}/`;
 
@@ -283,5 +291,6 @@ for (const course of COURSES) {
   summary.push(`${course.code}: ${units.size} units / ${docs.length} docs`);
 }
 
+fs.writeFileSync(path.join(ROOT, "public", "notes-version.json"), JSON.stringify(versions, null, 2) + "\n");
 fs.rmSync(TMP, { recursive: true, force: true });
 console.log(`[sync-notes] ${summary.join(" · ")}`);

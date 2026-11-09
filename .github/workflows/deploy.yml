@@ -4,9 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  # 每天同步一次各课程笔记仓库（伦敦时间约凌晨 4 点）
+  # 每 30 分钟看一眼各课程笔记仓库，有新提交才重新构建
   schedule:
-    - cron: "17 4 * * *"
+    - cron: "*/30 * * * *"
+  # 笔记仓库也可以主动通知（见 README「笔记即时更新」）
+  repository_dispatch:
+    types: [notes-updated]
 
 permissions:
   contents: read
@@ -18,7 +21,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        if: github.event_name == 'schedule'
+      - uses: actions/setup-node@v4
+        if: github.event_name == 'schedule'
+        with:
+          node-version: 22
+      - id: diff
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            node scripts/notes-changed.mjs
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: check
+    if: needs.check.outputs.changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -29,7 +29,22 @@ $$
 
 专业笔记不写在这个仓库里，而是来自各课程的笔记仓库（列表在 `src/data/courses.mjs`）。每次构建前 `scripts/sync-notes.mjs` 会把它们浅克隆下来并转换：`` ```math `` 转成公式、`.md` 之间的相对链接转成站内链接、图片复制到 `public/notes-assets/`。章节顺序跟各仓库 README 里列出的链接顺序一致。
 
-网站每天自动重新构建一次（见 `.github/workflows/deploy.yml`），所以往笔记仓库推送后最迟一天就会出现在网站上；想立刻更新，可以在本仓库的 Actions 页面手动运行 "Deploy to GitHub Pages"。
+**自动更新**：`.github/workflows/deploy.yml` 每 30 分钟用 `scripts/notes-changed.mjs` 比较各笔记仓库的最新提交和线上 `/notes-version.json`，有变化才重新构建。所以往笔记仓库推送后，一般半小时内网站就会更新（GitHub 的定时任务偶尔会晚几分钟）。想立刻更新：在本仓库 Actions 页面手动运行 "Deploy to GitHub Pages"。
+
+**笔记即时更新（可选）**：如果想推送后一两分钟就更新，可以让笔记仓库在推送时通知本站。需要一个只对本仓库有 Contents 读写权限的 fine-grained token，存成笔记仓库的 secret `SITE_DISPATCH_TOKEN`，再在笔记仓库加一个 workflow：
+
+```yaml
+on: { push: { branches: [main] } }
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: >
+          curl -sf -X POST -H "Authorization: Bearer ${{ secrets.SITE_DISPATCH_TOKEN }}"
+          -H "Accept: application/vnd.github+json"
+          https://api.github.com/repos/ZGQmoe/ZGQmoe.github.io/dispatches
+          -d '{"event_type":"notes-updated"}'
+```
 
 加一门课：在 `src/data/courses.mjs` 里加一项。
 
