@@ -1,0 +1,88 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostList from "../../components/PostList.astro";
+import { byCategory, getPosts } from "../../utils/posts";
+
+// 连载：从头读，按时间正序
+const posts = (await getPosts(byCategory("esp"))).reverse();
+
+// 标签索引：按篇数降序
+const tagCount = new Map<string, number>();
+posts.forEach((p) => p.data.tags.forEach((t) => tagCount.set(t, (tagCount.get(t) ?? 0) + 1)));
+const tags = [...tagCount.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<Base title="a better lesson(s) in ESP" description="ESP 小车全年连载：学到的东西、难办的 troubleshooting、团队里的教训。">
+  <div class="wrap">
+    <header class="page-head">
+      <h1>a better lesson(s) in ESP</h1>
+      <p>每周一篇：学到了什么，troubleshooting 时遇到的难题怎么解决，团队协作里的经验和教训。</p>
+    </header>
+
+    {
+      tags.length > 0 && (
+        <nav class="tag-index" aria-label="标签索引">
+          <span class="mono label">标签</span>
+          <button type="button" class="chip on" data-tag="">
+            全部 <span class="n">{posts.length}</span>
+          </button>
+          {tags.map(([t, n]) => (
+            <button type="button" class="chip" data-tag={t}>
+              {t} <span class="n">{n}</span>
+            </button>
+          ))}
+        </nav>
+      )
+    }
+
+    <div class="list">
+      <PostList posts={posts} showCategory={false} empty="还没有文章。" />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .tag-index {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+  .tag-index .label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .tag-index button {
+    background: transparent;
+    cursor: pointer;
+    padding: 6px 12px;
+  }
+  .tag-index button.on {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .n {
+    color: var(--accent);
+    margin-left: 2px;
+  }
+</style>
+
+<script>
+  // 点击标签：只显示带该标签的文章
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".tag-index button");
+  const items = document.querySelectorAll<HTMLLIElement>(".list li[data-tags]");
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tag = btn.dataset.tag ?? "";
+      buttons.forEach((b) => b.classList.toggle("on", b === btn));
+      items.forEach((li) => {
+        const tags = (li.dataset.tags ?? "").split("|");
+        li.hidden = tag !== "" && !tags.includes(tag);
+      });
+    });
+  });
+</script>

@@ -18,6 +18,7 @@ export const NAV = [
   { href: "/projects/", label: "项目" },
   { href: "/notes/", label: "笔记" },
   { href: "/writing/", label: "随笔" },
+  { href: "/esp/", label: "a better lesson(s) in ESP" },
   { href: "/archive/", label: "归档" },
   { href: "/friends/", label: "友链" },
   { href: "/about/", label: "关于" },
@@ -37,6 +38,7 @@ export const CATEGORIES = {
   learn: { label: "学习拾遗", section: "notes" },
   analysis: { label: "分析", section: "writing" },
   essay: { label: "杂文", section: "writing" },
+  esp: { label: "连载", section: "esp" },
 } as const;
 
 export type Category = keyof typeof CATEGORIES;

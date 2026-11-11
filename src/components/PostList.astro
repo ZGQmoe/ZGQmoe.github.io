@@ -1,6 +1,6 @@
 ---
 import { CATEGORIES } from "../config";
-import { formatDate, type Post } from "../utils/posts";
+import { formatDate, readingTime, type Post } from "../utils/posts";
 
 interface Props {
   posts: Post[];
@@ -16,7 +16,7 @@ const { posts, showCategory = true, empty = "还没有内容。" } = Astro.props
   ) : (
     <ul class="post-list">
       {posts.map((p) => (
-        <li data-category={p.data.category}>
+        <li data-category={p.data.category} data-tags={p.data.tags.join("|")}>
           <time class="mono" datetime={p.data.date.toISOString()}>
             {formatDate(p.data.date)}
           </time>
@@ -26,6 +26,7 @@ const { posts, showCategory = true, empty = "还没有内容。" } = Astro.props
               {p.data.draft && <span class="draft">草稿</span>}
             </a>
             {p.data.description && <p class="desc">{p.data.description}</p>}
+            <span class="rt mono">约 {readingTime(p.body)} 分钟</span>
           </div>
           {showCategory && <span class="cat mono">{CATEGORIES[p.data.category].label}</span>}
         </li>
@@ -70,6 +71,12 @@ const { posts, showCategory = true, empty = "还没有内容。" } = Astro.props
     font-size: 14px;
     color: var(--muted);
     line-height: 1.6;
+  }
+  .rt {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--muted);
   }
   .cat {
     font-size: 12px;

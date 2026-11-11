@@ -2,7 +2,7 @@
 import { render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import { CATEGORIES } from "../../config";
-import { formatDate, getPosts, tagSlug } from "../../utils/posts";
+import { formatDate, getPosts, readingTime, tagSlug } from "../../utils/posts";
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -15,8 +15,12 @@ export async function getStaticPaths() {
 const { post, newer, older } = Astro.props;
 const { Content } = await render(post);
 const cat = CATEGORIES[post.data.category];
-const sectionHref = cat.section === "notes" ? "/notes/" : "/writing/";
-const sectionLabel = cat.section === "notes" ? "笔记" : "随笔";
+const sections = {
+  notes: { href: "/notes/", label: "笔记" },
+  writing: { href: "/writing/", label: "随笔" },
+  esp: { href: "/esp/", label: "a better lesson(s) in ESP" },
+} as const;
+const { href: sectionHref, label: sectionLabel } = sections[cat.section];
 ---
 
 <Base title={post.data.title} description={post.data.description} progress>
@@ -27,6 +31,7 @@ const sectionLabel = cat.section === "notes" ? "笔记" : "随笔";
       <div class="meta mono">
         <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
         {post.data.updated && <span>更新于 {formatDate(post.data.updated)}</span>}
+        <span>约 {readingTime(post.body)} 分钟</span>
       </div>
       {
         post.data.tags.length > 0 && (

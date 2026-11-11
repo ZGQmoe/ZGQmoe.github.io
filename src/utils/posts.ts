@@ -17,6 +17,17 @@ export function formatDate(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
+/** 预计阅读时间（分钟）：中文约 350 字/分钟，英文约 200 词/分钟；代码块和公式不计入。 */
+export function readingTime(body: string | undefined) {
+  const text = (body ?? "")
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/\$\$[\s\S]*?\$\$/g, "")
+    .replace(/<[^>]+>/g, "");
+  const cjk = (text.match(/[一-鿿]/g) ?? []).length;
+  const latin = (text.replace(/[一-鿿]/g, " ").match(/[A-Za-z0-9]+/g) ?? []).length;
+  return Math.max(1, Math.round(cjk / 350 + latin / 200));
+}
+
 export function tagSlug(tag: string) {
   return encodeURIComponent(tag.trim().toLowerCase().replace(/\s+/g, "-"));
 }
