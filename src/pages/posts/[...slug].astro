@@ -18,7 +18,6 @@ const cat = CATEGORIES[post.data.category];
 const sections = {
   notes: { href: "/notes/", label: "笔记" },
   writing: { href: "/writing/", label: "随笔" },
-  esp: { href: "/esp/", label: "a better lesson(s) in ESP" },
 } as const;
 const { href: sectionHref, label: sectionLabel } = sections[cat.section];
 ---

@@ -1,7 +1,7 @@
 ---
-import Base from "../../layouts/Base.astro";
-import PostList from "../../components/PostList.astro";
-import { byCategory, getPosts } from "../../utils/posts";
+import Base from "../../../layouts/Base.astro";
+import PostList from "../../../components/PostList.astro";
+import { byCategory, getPosts } from "../../../utils/posts";
 
 // 连载：从头读，按时间正序
 const posts = (await getPosts(byCategory("esp"))).reverse();
@@ -15,6 +15,7 @@ const tags = [...tagCount.entries()].sort((a, b) => b[1] - a[1]);
 <Base title="a better lesson(s) in ESP" description="ESP 小车全年连载：学到的东西、难办的 troubleshooting、团队里的教训。">
   <div class="wrap">
     <header class="page-head">
+      <p class="mono crumb"><a href="/writing/">随笔</a> / a better lesson(s) in ESP</p>
       <h1>a better lesson(s) in ESP</h1>
       <p>每周一篇：学到了什么，troubleshooting 时遇到的难题怎么解决，团队协作里的经验和教训。</p>
     </header>
@@ -42,6 +43,10 @@ const tags = [...tagCount.entries()].sort((a, b) => b[1] - a[1]);
 </Base>
 
 <style>
+  .crumb {
+    font-size: 13px;
+    color: var(--muted);
+  }
   .tag-index {
     display: flex;
     flex-wrap: wrap;

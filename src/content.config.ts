@@ -8,7 +8,7 @@ const posts = defineCollection({
     title: z.string(),
     date: z.coerce.date(),
     updated: z.coerce.date().optional(),
-    // learn 学习拾遗 · analysis 分析 · essay 杂文 · esp ESP 踩坑分享（连载）
+    // learn 学习拾遗 · analysis 分析 · essay 杂文 · esp a better lesson(s) in ESP（随笔下的连载）
     category: z.enum(["learn", "analysis", "essay", "esp"]),
     tags: z.array(z.string()).default([]),
     description: z.string().optional(),

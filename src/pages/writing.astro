@@ -3,11 +3,12 @@ import Base from "../layouts/Base.astro";
 import PostList from "../components/PostList.astro";
 import { byCategory, getPosts } from "../utils/posts";
 
-const posts = await getPosts(byCategory("analysis", "essay"));
+const posts = await getPosts(byCategory("analysis", "essay", "esp"));
 const filters = [
   { key: "all", label: "全部" },
   { key: "analysis", label: "分析" },
   { key: "essay", label: "杂文" },
+  { key: "esp", label: "a better lesson(s) in ESP" },
 ];
 ---
 
@@ -28,6 +29,10 @@ const filters = [
       }
     </div>
 
+    <p class="sub-link">
+      <a href="/writing/esp/">a better lesson(s) in ESP 的标签索引 →</a>
+    </p>
+
     <div class="list">
       <PostList posts={posts} empty="还没有随笔。" />
     </div>
@@ -40,6 +45,10 @@ const filters = [
     display: flex;
     gap: 8px;
     margin-bottom: 18px;
+  }
+  .sub-link {
+    margin: -6px 0 18px;
+    font-size: 14px;
   }
   .filters button {
     background: transparent;
