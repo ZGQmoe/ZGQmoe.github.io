@@ -37,7 +37,7 @@ export const CATEGORIES = {
   learn: { label: "学习拾遗", section: "notes" },
   analysis: { label: "分析", section: "writing" },
   essay: { label: "杂文", section: "writing" },
-  esp: { label: "a better lesson(s) in ESP", section: "writing" },
+  esp: { label: "a bitter lesson(s) in ESP", section: "writing" },
 } as const;
 
 export type Category = keyof typeof CATEGORIES;
