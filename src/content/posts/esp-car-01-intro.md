@@ -4,7 +4,7 @@ date: 2026-11-11
 category: esp
 tags: [ESP32, 小车, 团队协作]
 description: 这是一门必修课的项目，大家对 outcome 的目标、节奏和做事方式都不一样。
-draft: true
+draft: false
 ---
 
 <!-- 草稿骨架：写的时候替换掉下面的提示，draft 改成 false 即可发布 -->
