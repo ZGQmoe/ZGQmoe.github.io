@@ -5,6 +5,7 @@
 // 单元里按「笔记 / 例题」分标签页：
 //   /notes/<课程>/<单元>/           第一篇笔记
 //   /notes/<课程>/<单元>/problems/  例题（文件名含 problem / example / exercise）
+//   /notes/<课程>/<单元>/pack/      学习包（文件名含 study-pack，正文里独占一行的 .html 链接会内嵌）
 //
 // 转换：
 //   - ```math 代码块 → $$ … $$（KaTeX）
@@ -63,7 +64,8 @@ function walk(dir, base = dir) {
 const humanize = (s) => s.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 const firstH1 = (md) => md.match(/^#[ \t]+(.+?)[ \t]*#*[ \t]*$/m)?.[1].replace(/\*\*/g, "").trim();
 const isReadme = (f) => /(^|\/)README\.md$/i.test(f);
-const isProblems = (f) => /problem|example|exercise|question/i.test(posix.basename(f));
+const isPack = (f) => /study-pack/i.test(posix.basename(f));
+const isProblems = (f) => !isPack(f) && /problem|example|exercise|question/i.test(posix.basename(f));
 
 /** 单元键：chapter-N / 子目录名 / 文件名 */
 function unitKey(rel) {
@@ -156,19 +158,23 @@ for (const course of COURSES) {
   docs.forEach((rel, i) => {
     const key = unitKey(rel);
     if (!units.has(key)) units.set(key, { key, order: units.size, docs: [] });
-    units.get(key).docs.push({ rel, i, problems: isProblems(rel), raw: fs.readFileSync(path.join(src, rel), "utf8") });
+    units.get(key).docs.push({ rel, i, problems: isProblems(rel), pack: isPack(rel), raw: fs.readFileSync(path.join(src, rel), "utf8") });
   });
   const route = new Map(); // rel → 站内路径（不含 /notes/ 前缀）
   for (const u of units.values()) {
-    u.docs.sort((a, b) => Number(a.problems) - Number(b.problems) || a.i - b.i);
-    const notesDocs = u.docs.filter((d) => !d.problems);
+    const kind = (d) => (d.pack ? 2 : d.problems ? 1 : 0);
+    u.docs.sort((a, b) => kind(a) - kind(b) || a.i - b.i);
+    const notesDocs = u.docs.filter((d) => !d.problems && !d.pack);
     const probDocs = u.docs.filter((d) => d.problems);
     u.docs.forEach((d, t) => {
       d.title = firstH1(d.raw) || humanize(posix.basename(d.rel, ".md"));
       if (t === 0) d.tab = "";
+      else if (d.pack) d.tab = "pack";
       else if (d.problems) d.tab = probDocs.length > 1 ? `problems-${probDocs.indexOf(d) + 1}` : "problems";
       else d.tab = posix.basename(d.rel, ".md").toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      d.tabLabel = d.problems
+      d.tabLabel = d.pack
+        ? "学习包"
+        : d.problems
         ? probDocs.length > 1
           ? d.title
           : "例题"
