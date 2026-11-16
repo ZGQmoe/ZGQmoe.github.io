@@ -5,7 +5,8 @@
 // 单元里按「笔记 / 例题」分标签页：
 //   /notes/<课程>/<单元>/           第一篇笔记
 //   /notes/<课程>/<单元>/problems/  例题（文件名含 problem / example / exercise）
-//   /notes/<课程>/<单元>/pack/      学习包（文件名含 study-pack，正文里独占一行的 .html 链接会内嵌）
+//   /notes/<课程>/<单元>/<kind>/    学习包的各部分（文件名 chapter-N-pack-<kind>.md，标签名取标题里「—」后面的字；
+//                                   正文里独占一行的 .html 链接会内嵌）
 //
 // 转换：
 //   - ```math 代码块 → $$ … $$（KaTeX）
@@ -64,7 +65,8 @@ function walk(dir, base = dir) {
 const humanize = (s) => s.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 const firstH1 = (md) => md.match(/^#[ \t]+(.+?)[ \t]*#*[ \t]*$/m)?.[1].replace(/\*\*/g, "").trim();
 const isReadme = (f) => /(^|\/)README\.md$/i.test(f);
-const isPack = (f) => /study-pack/i.test(posix.basename(f));
+const packKind = (f) => posix.basename(f).match(/-pack-([a-z0-9]+)\.md$/i)?.[1].toLowerCase();
+const isPack = (f) => Boolean(packKind(f));
 const isProblems = (f) => !isPack(f) && /problem|example|exercise|question/i.test(posix.basename(f));
 
 /** 单元键：chapter-N / 子目录名 / 文件名 */
@@ -169,11 +171,11 @@ for (const course of COURSES) {
     u.docs.forEach((d, t) => {
       d.title = firstH1(d.raw) || humanize(posix.basename(d.rel, ".md"));
       if (t === 0) d.tab = "";
-      else if (d.pack) d.tab = "pack";
+      else if (d.pack) d.tab = packKind(d.rel);
       else if (d.problems) d.tab = probDocs.length > 1 ? `problems-${probDocs.indexOf(d) + 1}` : "problems";
       else d.tab = posix.basename(d.rel, ".md").toLowerCase().replace(/[^a-z0-9]+/g, "-");
       d.tabLabel = d.pack
-        ? "学习包"
+        ? d.title.split(/\s[—–-]\s/).pop().trim()
         : d.problems
         ? probDocs.length > 1
           ? d.title

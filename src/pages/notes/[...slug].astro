@@ -57,12 +57,24 @@ const unitHref = (u: Unit) => `/notes/${u.tabs[0].id}/`;
           {
             units.map((u) => {
               const t = splitTitle(u.title);
+              const open = unit?.key === u.key && u.tabs.length > 1;
               return (
-                <a href={unitHref(u)} class:list={["unit", { on: unit?.key === u.key }]}>
-                  <span class="u-head">{t.head}</span>
-                  {t.sub && <span class="u-sub">{t.sub}</span>}
-                  {u.tabs.length > 1 && <span class="u-tabs mono">{u.tabs.map((x) => x.data.tabLabel).join(" · ")}</span>}
-                </a>
+                <>
+                  <a href={unitHref(u)} class:list={["unit", { on: unit?.key === u.key }]}>
+                    <span class="u-head">{t.head}</span>
+                    {t.sub && <span class="u-sub">{t.sub}</span>}
+                    {u.tabs.length > 1 && !open && <span class="u-tabs mono">{u.tabs.map((x) => x.data.tabLabel).join(" · ")}</span>}
+                  </a>
+                  {open && (
+                    <div class="sub">
+                      {u.tabs.map((x) => (
+                        <a href={`/notes/${x.id}/`} class:list={{ cur: x.id === note!.id }}>
+                          {x.data.tabLabel}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </>
               );
             })
           }
@@ -277,11 +289,29 @@ const unitHref = (u: Unit) => `/notes/${u.tabs[0].id}/`;
     font-size: 11px;
     opacity: 0.75;
   }
+  /* 当前章节展开：列出这一章的每个标签页，标出正在看的那一个 */
+  .sub {
+    display: flex;
+    flex-direction: column;
+    margin: 2px 0 8px 12px;
+    padding-left: 8px;
+    border-left: 1px solid var(--line);
+  }
+  .side-nav .sub a {
+    font-size: 13px;
+    padding: 3px 8px;
+  }
+  .side-nav .sub a.cur {
+    color: var(--accent);
+    font-weight: 600;
+    background: var(--accent-soft);
+  }
   .h-sub {
     font-weight: 600;
   }
   .tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 4px;
     margin: 4px 0 12px;
     padding: 4px;
