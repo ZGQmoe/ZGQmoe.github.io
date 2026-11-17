@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>期末倒排计划</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: one narrow working column; summary strip on top, then tabs. Numbers in mono, everything else in sans. */
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#18212b; --muted:#5d6b7a; --line:#d7dee6;
+  --accent:#1f5fa8; --accent-ink:#ffffff; --soft:#e8eff8;
+  --good:#1f7a4d; --warn:#a15c00; --bad:#b3261e;
+  --c-SNS:#1f5fa8; --c-MCE:#7a4bb5; --c-EM:#0e7c7b; --c-MGT:#a15c00; --c-ESP:#b03a5b;
+  --display:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --body:"IBM Plex Sans","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11161c; --panel:#19212a; --ink:#e6ecf2; --muted:#9aa8b6; --line:#2c3743;
+    --accent:#7db2f0; --accent-ink:#0d1620; --soft:#1e2c3d;
+    --good:#6fcf9b; --warn:#f0b35a; --bad:#f28b82;
+    --c-SNS:#7db2f0; --c-MCE:#b99cf0; --c-EM:#5fd0cc; --c-MGT:#f0b35a; --c-ESP:#f08fae;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11161c; --panel:#19212a; --ink:#e6ecf2; --muted:#9aa8b6; --line:#2c3743;
+  --accent:#7db2f0; --accent-ink:#0d1620; --soft:#1e2c3d;
+  --good:#6fcf9b; --warn:#f0b35a; --bad:#f28b82;
+  --c-SNS:#7db2f0; --c-MCE:#b99cf0; --c-EM:#5fd0cc; --c-MGT:#f0b35a; --c-ESP:#f08fae;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 64px;display:flex;flex-direction:column;gap:16px}
+h1{font-size:20px;margin:0;font-weight:600;text-wrap:balance}
+h2{font-size:15px;margin:0;font-weight:600}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+header.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sync{font-size:12px;color:var(--muted)}
+.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.tile b{font-family:var(--display);font-size:24px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums}
+.tile span{font-size:12px;color:var(--muted)}
+@media (max-width:560px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.note{border-left:3px solid var(--accent);background:var(--soft);padding:8px 12px;border-radius:0 6px 6px 0;font-size:13px}
+.note.warn{border-color:var(--warn)}
+.note.bad{border-color:var(--bad)}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav button{font:inherit;font-size:14px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+section{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.row{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.row .main{flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.title{font-weight:600;overflow-wrap:anywhere}
+.chip{display:inline-block;font-family:var(--display);font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;border:1px solid currentColor;margin-right:6px;white-space:nowrap}
+.tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:4px;background:var(--soft);color:var(--muted);margin-left:6px;white-space:nowrap}
+.tag.late{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+.tag.fixed{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.btn{font:inherit;font-size:13px;padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{color:var(--muted)}
+.btn.tog{min-width:84px;border-style:dashed;color:var(--muted)}
+.btn.tog.on{border-style:solid;border-color:var(--good);color:var(--good);font-weight:600}
+.struck,.struck .title{text-decoration:line-through;color:var(--muted)}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:13px}
+.dl dt{color:var(--muted)}
+.dl dd{margin:0;overflow-wrap:anywhere}
+.day{display:grid;grid-template-columns:92px 1fr;gap:4px 12px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.day:first-child{border-top:0}
+.day .d{font-family:var(--display);font-variant-numeric:tabular-nums}
+.day.today .d{color:var(--accent);font-weight:600}
+.day ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px}
+@media (max-width:480px){.day{grid-template-columns:1fr}}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:currentColor}
+.unit{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px;align-items:center}
+.unit:first-of-type{border-top:0}
+.unit.done .title{text-decoration:line-through;color:var(--muted);font-weight:400}
+label.chk{display:flex;gap:8px;align-items:flex-start;font-size:14px;cursor:pointer}
+label.chk input{margin-top:4px}
+.caps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.caps label{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted)}
+.caps input{width:100%;font:inherit;font-family:var(--display);padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.tl{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.tl-in{min-width:790px;padding:8px 10px 10px 0}
+.tl-row{display:grid;align-items:center;min-height:24px}
+.tl-row.course{margin-top:10px;border-top:1px solid var(--line);padding-top:6px}
+.tl-l{position:sticky;left:0;z-index:2;background:var(--panel);padding:0 8px 0 10px;font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:6px;align-items:baseline;justify-content:space-between}
+.tl-row.course .tl-l b{color:inherit;font-family:var(--display)}
+.unit-row .tl-l{display:block;color:var(--muted)}
+.tl-d{font-family:var(--display);font-size:10px;color:var(--muted);text-align:center;position:relative;padding-top:14px}
+.tl-d b{position:absolute;top:0;left:2px;font-weight:600;color:var(--ink);white-space:nowrap}
+.tl-d.we{color:var(--ink)}
+.tl-d.now span{background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:0 3px}
+.tl-c{position:relative;height:22px;font-size:11px;text-align:center;line-height:22px;color:var(--ink);border-left:1px solid var(--line)}
+.tl-c.now{box-shadow:inset 0 0 0 1px var(--accent)}
+.tl-c i{position:absolute;inset:2px 1px;background:currentColor;border-radius:3px}
+.tl-row.course .tl-c i{background:var(--cc,currentColor)}
+.tl-c span{position:relative;color:var(--ink);font-weight:600}
+.tl-c em{position:absolute;top:-9px;left:0;right:0;font-style:normal;font-size:9px;line-height:1;color:var(--bad)}
+.tl-b{grid-row:1;height:10px;border-radius:5px;background:currentColor;opacity:.8;margin:0 1px}
+.tl-b.late{box-shadow:0 0 0 2px var(--bad)}
+.tl-b.done{background:none;opacity:1;height:auto;font-size:11px;text-align:center;color:var(--good)}
+.tl-due{grid-row:1;justify-self:end;width:2px;height:16px;background:var(--ink);opacity:.55}
+.hol{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.hol-c{border:1px solid var(--line);border-left:3px solid currentColor;border-radius:6px;padding:4px 8px;display:flex;flex-direction:column;font-size:12px}
+.hol-c b{color:var(--ink);font-weight:500}
+.hol-c span{color:var(--muted)}
+.hol-c.now{box-shadow:0 0 0 1px var(--accent)}
+.hol-c.ok b{text-decoration:line-through;color:var(--muted)}
+ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.pending{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.pending .main{flex:1 1 280px}
+.btn[disabled]{opacity:.5;cursor:default}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>期末倒排计划</h1>
+    <span class="sync" id="sync">正在读取计划…</span>
+  </header>
+  <div class="strip" id="strip"></div>
+  <div id="pending"></div>
+  <div id="banner"></div>
+  <nav id="tabs" role="tablist"></nav>
+  <main id="view"></main>
+</div>
+<script type="module">
+import { addDays, diffDays, wd, WD, md, emptyState, normState, loadPlan, blocksOf, remOf, schedule, reviewLoad, dueReviews, merge3, countDiff } from './core.js';
+
+const KEY = 'countdown-plan-local-v2';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const code = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+const today = () => { const n = new Date(); return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0'); };
+const syncEl = document.getElementById('sync');
+
+let P, repo, base, st, tab = 'today', copied = false, fallback = '';
+try { const h = location.hash.slice(1); if (h) tab = h; } catch (e) {}
+
+async function getJSON(f) {
+  const r = await fetch(f + '?v=' + Date.now(), { cache: 'no-store' });
+  if (!r.ok) throw new Error(f + ' ' + r.status);
+  return r.json();
+}
+
+// 本机只存「相对 repo 改了什么」。repo 里已经有的改动会自动消掉。
+function loadLocal() {
+  try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+  return null;
+}
+function save() {
+  const n = countDiff(st, repo);
+  try { if (n) localStorage.setItem(KEY, JSON.stringify({ base: repo, st })); else localStorage.removeItem(KEY); } catch (e) {}
+  base = repo;
+}
+
+function progressJSON() {
+  const o = { updated: today() };
+  ['done', 'part', 'pull', 'rev', 'adj', 'hol', 'dl', 'log', 'failed'].forEach(k => { o[k] = st[k]; });
+  o.cap = st.cap;
+  return JSON.stringify(o, null, 2).replace(/\[\n\s+([\d,\s]+?)\n\s+\]/g, (m, a) => '[' + a.replace(/\s+/g, ' ').replace(/,\s*/g, ', ').trim() + ']') + '\n';
+}
+function pendingBox() {
+  const n = countDiff(st, repo), el = document.getElementById('pending');
+  if (!n) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="note warn pending"><div class="main">这个浏览器里有 <span class="num">${n}</span> 处改动还没写回 repo，别的设备和 Codex 看不到。复制后发给 Codex（或 Claude），它会更新 <code>public/plan/progress.json</code> 并推送；推送后刷新，这条会自己消失。</div>
+    <div class="acts"><button class="btn primary" data-act="copy">${copied ? '已复制 ✓' : '复制给 Codex'}</button><button class="btn ghost" data-act="discard">丢弃本机改动</button></div></div>${fallback ? `<textarea readonly rows="8" style="width:100%;margin-top:6px;font-family:var(--display);font-size:12px">${esc(fallback)}</textarea><div class="small muted">浏览器没让自动复制，手动全选上面的内容复制。</div>` : ''}`;
+}
+
+const chip = c => `<span class="chip" style="color:var(--c-${c})">${P.courses[c] ? P.courses[c].code : esc(c)}</span>`;
+function unitDetail(u) {
+  return `<dl class="dl"><dt>材料</dt><dd>${esc(u.source)}</dd><dt>完成标准</dt><dd>${code(u.standard)}</dd>${u.fixed ? `<dt>硬截止</dt><dd>${esc(u.fixed)}</dd>` : ''}</dl>`;
+}
+function strip(t, s) {
+  const D = P.dates;
+  const remB = P.units.reduce((a, u) => a + remOf(u, st), 0);
+  const todayB = (s.days.find(x => x.d === t) || { items: [] }).items.reduce((a, i) => a + i.n, 0);
+  const revMin = dueReviews(P, st, t).reduce((a, x) => a + x.r.min, 0);
+  const tiles = [
+    [Math.max(0, diffDays(t, D.leave)), `天后离校（${md(D.leave)}）`],
+    [Math.max(0, diffDays(t, D.exam)), `天后最早考试（${md(D.exam)}）`],
+    [todayB + ' 块', '今天要学（每块 ' + P.blockMinutes + ' 分钟）'],
+    [revMin + ' 分钟', '今天要复习'],
+  ];
+  document.getElementById('strip').innerHTML = tiles.map(x => `<div class="tile"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  let cap = 0; const from = t < D.start ? D.start : t;
+  for (let d = from; d <= D.lastStudy; d = addDays(d, 1)) cap += st.cap[wd(d)] || 0;
+  const late = s.days.reduce((a, d) => a + d.items.filter(i => i.late && i.ends).length, 0);
+  let h = '';
+  if (t > D.lastStudy) h = `<div class="note">现在是假期刷题阶段。新内容应当已经在离校前过完，没过完的列在「单元」里。</div>`;
+  else if (s.overflow.length) { const n = s.overflow.reduce((a, o) => a + o.n, 0); h = `<div class="note bad">按现在的每日容量，离校前排不完，还差 <span class="num">${n}</span> 块。去「设置」加容量，或者在「单元」里减少块数。</div>`; }
+  else if (late) h = `<div class="note warn">全部排得进，但有 <span class="num">${late}</span> 个单元会晚于自己的截止日完成，在「日程」里标了出来。剩余 <span class="num">${remB}</span> 块，到 ${md(D.lastStudy)} 的容量 <span class="num">${cap}</span> 块。</div>`;
+  else h = `<div class="note">剩余 <span class="num">${remB}</span> 块，到 ${md(D.lastStudy)} 的容量 <span class="num">${cap}</span> 块，余量 <span class="num">${cap - remB}</span> 块。没做完的会自动顺延，不会消失。</div>`;
+  document.getElementById('banner').innerHTML = h;
+}
+const DKIND = { lab: '实验', report: '报告', info: '通知' };
+const toggle = (act, key, on, label) => `<button class="btn tog${on ? ' on' : ''}" aria-pressed="${on}" data-act="${act}" data-key="${key}">${on ? label + ' ✓' : '未' + label.replace(/^已/, '')}</button>`;
+function dlRow(x, t) {
+  const n = diffDays(t, x.date);
+  const left = n < 0 ? '已过' : n === 0 ? '今天' : n + ' 天后';
+  return `<div class="day${n === 0 ? ' today' : ''}"><div><div class="d">${md(x.date)} ${WD[wd(x.date)]}</div><div class="small muted num">${x.time ? esc(x.time) + ' · ' : ''}${left}</div></div>
+    <div class="row"><div class="main${st.dl[x.id] ? ' struck' : ''}"><span>${chip(x.course)}<span class="tag">${DKIND[x.kind]}</span> ${esc(x.what)}</span></div>
+    <div class="acts">${toggle('dl', x.id, !!st.dl[x.id], x.kind === 'lab' ? '已上完' : x.kind === 'info' ? '已看' : '已交')}</div></div></div>`;
+}
+function vDeadlines(t) {
+  return `<section><h2>实验与报告截止</h2><div class="card">${P.deadlines.map(x => dlRow(x, t)).join('')}</div>
+  <p class="small muted">按钮点一下标成已交或已上完，再点一下恢复，事项不会消失。</p></section>
+  <section><h2>还没有日期的事项</h2><div class="card"><ul class="plain">${P.undated.map(x => `<li>${chip(x.course)}${esc(x.what)}</li>`).join('')}</ul></div></section>`;
+}
+const logged = (id, t) => (st.log[t] && st.log[t][id]) || 0;
+function vToday(t, s) {
+  if (t > P.dates.lastStudy) return vHoliday(t, true);
+  const day = s.days.find(x => x.d === t) || { items: [] };
+  const rv = dueReviews(P, st, t);
+  const soon = P.deadlines.filter(x => x.date >= t && diffDays(t, x.date) <= 7);
+  let h = soon.length ? `<section><h2>7 天内的实验与报告</h2><div class="card">${soon.map(x => dlRow(x, t)).join('')}</div></section>` : '';
+  h += `<section><h2>今天新学 <span class="muted small">${md(t)} ${WD[wd(t)]}</span></h2>`;
+  if (!day.items.length) h += `<div class="card muted">今天没有排新内容。${st.cap[wd(t)] ? '' : '今天的容量设成了 0。'}</div>`;
+  day.items.forEach(i => { const u = P.byId[i.id];
+    h += `<div class="card"><div class="row"><div class="main"><div class="title">${chip(u.course)}${esc(u.title)}
+      <span class="tag num">今天 ${i.n} 块</span>${i.late ? '<span class="tag late">已过截止</span>' : ''}${st.pull[u.id] ? '<span class="tag">提前做</span>' : ''}</div>${unitDetail(u)}
+      <div class="small muted">共 <span class="num">${blocksOf(u, st)}</span> 块，已记 <span class="num">${st.part[u.id] || 0}</span> 块，截止 ${md(u.due)}</div></div>
+      <div class="acts">${logged(u.id, t) ? `<button class="btn ghost" data-act="unpart" data-id="${u.id}">撤 1 块</button>` : ''}<button class="btn" data-act="part" data-id="${u.id}">做了 1 块</button><button class="btn tog" aria-pressed="false" data-act="done" data-id="${u.id}">未完成</button></div></div></div>`; });
+  const doneToday = P.units.filter(u => st.done[u.id] === t && !(st.failed[u.id] && st.failed[u.id].on === t));
+  const loggedOnly = P.units.filter(u => logged(u.id, t) && !st.done[u.id] && !day.items.some(i => i.id === u.id));
+  doneToday.forEach(u => { h += `<div class="card"><div class="row"><div class="main struck"><div class="title">${chip(u.course)}${esc(u.title)}</div></div>
+    <div class="acts"><button class="btn tog on" aria-pressed="true" data-act="undo" data-id="${u.id}">已完成 ✓</button></div></div></div>`; });
+  loggedOnly.forEach(u => { h += `<div class="card"><div class="row"><div class="main"><div class="title">${chip(u.course)}${esc(u.title)} <span class="tag num">今天已记 ${logged(u.id, t)} 块</span></div></div>
+    <div class="acts"><button class="btn ghost" data-act="unpart" data-id="${u.id}">撤 1 块</button></div></div></div>`; });
+  h += `<div class="small muted">学得比计划快：去「单元」或「日程」点「提前做」，它会排到今天最前面。</div>`;
+  h += `</section><section><h2>今天短复习 <span class="muted small">共 ${rv.reduce((a, x) => a + x.r.min, 0)} 分钟</span></h2>`;
+  if (!rv.length) h += `<div class="card muted">没有到期的复习。单元标成完成后，第 1、3、7 天会出现在这里。</div>`;
+  rv.forEach(x => { const u = P.byId[x.id];
+    h += `<div class="card"><div class="row"><div class="main"><div class="title">${chip(u.course)}${esc(u.title)}
+      <span class="tag num">${x.r.min} 分钟</span>${x.due < t ? `<span class="tag late">${md(x.due)} 到期</span>` : ''}</div>
+      <div class="small"><b>${esc(x.r.t)}</b>：${esc(x.r.how)}</div><div class="small muted">完成标准：${code(u.standard)}</div></div>
+      <div class="acts"><button class="btn" data-act="fail" data-id="${u.id}">没过，重排</button><button class="btn tog" aria-pressed="false" data-act="rev" data-key="${x.key}">未复习</button></div></div></div>`; });
+  Object.keys(st.rev).filter(k => st.rev[k] === t).forEach(k => { const [id, off] = k.split('@'); const u = P.byId[id]; const r = P.reviews.find(r => String(r.off) === off); if (!u || !r) return;
+    h += `<div class="card"><div class="row"><div class="main struck"><div class="title">${chip(u.course)}${esc(u.title)} <span class="tag">${esc(r.t)}</span></div></div>
+    <div class="acts"><button class="btn tog on" aria-pressed="true" data-act="unrev" data-key="${k}">已复习 ✓</button></div></div></div>`; });
+  Object.keys(st.failed).filter(id => st.failed[id].on === t && P.byId[id]).forEach(id => { const u = P.byId[id];
+    h += `<div class="card"><div class="row"><div class="main"><div class="title">${chip(u.course)}${esc(u.title)} <span class="tag late">已重排</span></div><div class="small muted">从今天起重新走第 1、3、7 天。</div></div>
+    <div class="acts"><button class="btn" data-act="unfail" data-id="${id}">撤销重排</button></div></div></div>`; });
+  h += `</section><p class="small muted">所有按钮都能点回去：点过的事项会留在原位并划线，再点一下恢复。「已完成」由你自己按完成标准确认。</p>`;
+  return h;
+}
+const pullBtn = (u, t) => st.done[u.id] ? '' : st.pull[u.id]
+  ? `<button class="btn tog on" aria-pressed="true" data-act="unpull" data-id="${u.id}">提前做 ✓</button>`
+  : `<button class="btn ghost" data-act="pull" data-id="${u.id}">提前做</button>`;
+function vSched(t, s) {
+  const load = reviewLoad(P, st, s);
+  let h = `<section><h2>到离校前的日程</h2><div class="card">`;
+  s.days.forEach(day => {
+    const n = day.items.reduce((a, i) => a + i.n, 0);
+    h += `<div class="day${day.d === t ? ' today' : ''}"><div><div class="d">${md(day.d)} ${WD[wd(day.d)]}</div>
+      <div class="small muted num">${n} 块 · 复习 ${load[day.d] || 0}′</div></div><ul>`;
+    if (!day.items.length) h += `<li class="muted">${day.buffer ? '缓冲日：打印真题，补没做完的' : '没有排新内容'}</li>`;
+    day.items.forEach(i => { const u = P.byId[i.id];
+      h += `<li>${chip(u.course)}${esc(u.title)} <span class="num muted">×${i.n}</span>${i.late && i.ends ? '<span class="tag late">晚于 ' + md(u.due) + '</span>' : ''}${u.fixed && i.ends ? '<span class="tag fixed">' + esc(u.fixed) + '</span>' : ''}${day.d > t && !st.pull[u.id] ? ` <button class="btn ghost" style="padding:0 6px;font-size:12px" data-act="pull" data-id="${u.id}">提前到今天</button>` : ''}</li>`; });
+    h += `</ul></div>`; });
+  h += `</div><p class="small muted">复习分钟数包含按日程推算的未来复习，实际以你标完成的日期为准。</p></section>`;
+  return h;
+}
+function vHoliday(t, asToday) {
+  const box = (d, j, it) => `<label class="chk"><input type="checkbox" data-act="hol" data-key="${d}#${j}" ${st.hol[d + '#' + j] ? 'checked' : ''}><span>${esc(it)}</span></label>`;
+  let h = `<section><h2>假期纸质刷题 <span class="muted small">${md(addDays(P.dates.leave, 1))} – ${md(P.dates.back)}</span></h2>`;
+  if (asToday) { const row = P.holiday.find(x => x.date === t);
+    if (row) h += `<div class="card"><div class="title">今天 ${md(t)} ${WD[wd(t)]}：${esc(row.title)}</div>${row.items.map((it, j) => box(row.date, j, it)).join('') || '<span class="muted">休息</span>'}</div>`; }
+  h += `<div class="card">`;
+  P.holiday.forEach(({ date: d, title, items }) => {
+    h += `<div class="day${d === t ? ' today' : ''}"><div class="d">${md(d)} ${WD[wd(d)]}</div><div><div class="title">${esc(title)}</div>${items.map((it, j) => box(d, j, it)).join('')}</div></div>`; });
+  h += `</div><div class="note">考试总表公布后，把每科最后两次整卷模拟挪到考前 10–7 天和 6–3 天。</div></section>
+  <section><h2>离校前打印</h2><div class="card"><ul class="plain">${P.print.map(p => `<li><b>${esc(p.course)}</b>：${esc(p.what)}</li>`).join('')}</ul></div></section>`;
+  return h;
+}
+function vTimeline(t, s) {
+  const D = P.dates;
+  const days = []; for (let d = D.start; d <= D.lastStudy; d = addDays(d, 1)) days.push(d);
+  const N = days.length, col = d => diffDays(D.start, d) + 2;
+  const cols = `grid-template-columns:150px repeat(${N},minmax(18px,1fr))`;
+  const al = {};
+  s.days.forEach(day => day.items.forEach(i => { const a = al[i.id] || (al[i.id] = { first: day.d, last: day.d, per: {} }); a.last = day.d; a.per[day.d] = i.n; }));
+  const clamp = d => d < D.start ? D.start : d > D.lastStudy ? D.lastStudy : d;
+  let h = `<section><h2>时间线 <span class="muted small">${md(D.start)} – ${md(D.lastStudy)}，一格一天</span></h2><div class="tl"><div class="tl-in">`;
+  h += `<div class="tl-row head" style="${cols}"><div class="tl-l"></div>${days.map(d => `<div class="tl-d${d === t ? ' now' : ''}${wd(d) === 0 || wd(d) === 6 ? ' we' : ''}">${wd(d) === 1 || d === D.start ? `<b>${md(d)}</b>` : ''}<span>${Number(d.slice(8))}</span></div>`).join('')}</div>`;
+  const totals = {}; s.days.forEach(day => { totals[day.d] = day.items.reduce((a, i) => a + i.n, 0); });
+  h += `<div class="tl-row" style="${cols}"><div class="tl-l"><b>每天合计</b><span class="small muted">块</span></div>${days.map(d => `<div class="tl-c num${d === t ? ' now' : ''}" style="${totals[d] ? 'background:var(--soft)' : ''}">${d < t ? '' : totals[d] || ''}</div>`).join('')}</div>`;
+  Object.keys(P.courses).forEach(c => {
+    const us = P.units.filter(u => u.course === c);
+    const tot = us.reduce((a, u) => a + blocksOf(u, st), 0), rem = us.reduce((a, u) => a + remOf(u, st), 0);
+    const per = {}; us.forEach(u => { const a = al[u.id]; if (a) Object.keys(a.per).forEach(d => { per[d] = (per[d] || 0) + a.per[d]; }); });
+    const dls = P.deadlines.filter(x => x.course === c);
+    h += `<div class="tl-row course" style="${cols};color:var(--c-${c});--cc:var(--c-${c})"><div class="tl-l"><b>${P.courses[c].code}</b><span class="small num">剩 ${rem}/${tot} 块</span></div>${
+      days.map(d => { const n = per[d] || 0, dl = dls.filter(x => x.date === d);
+        return `<div class="tl-c num${d === t ? ' now' : ''}" ${dl.length ? `title="${esc(dl.map(x => x.what).join('；'))}"` : ''}>${n ? `<i style="opacity:${Math.min(1, .25 + n * .2)}"></i><span>${n}</span>` : ''}${dl.length ? '<em>◆</em>' : ''}</div>`; }).join('')}</div>`;
+    const key = u => st.done[u.id] || (al[u.id] ? al[u.id].first : '9999');
+    us.slice().sort((x, y) => key(x) < key(y) ? -1 : key(x) > key(y) ? 1 : 0).forEach(u => {
+      const d = st.done[u.id], a = al[u.id];
+      let bar = '';
+      if (d) { const x = col(clamp(d)); bar = `<div class="tl-b done" style="grid-column:${x}/${x + 1}">✓</div>`; }
+      else if (a) bar = `<div class="tl-b${a.last > u.due ? ' late' : ''}" style="grid-column:${col(a.first)}/${col(a.last) + 1}"></div>`;
+      const due = u.due >= D.start && u.due <= D.lastStudy && !d ? `<div class="tl-due" style="grid-column:${col(u.due)}/${col(u.due) + 1}"></div>` : '';
+      h += `<div class="tl-row unit-row" style="${cols};color:var(--c-${c})"><div class="tl-l${d ? ' muted' : ''}" title="${esc(u.title)}">${esc(u.title)}</div>${bar}${due}</div>`; });
+  });
+  h += `</div></div><div class="small muted">每门课第一行是每天分到的块数，颜色越深越多，◆ 是实验或报告截止。横杠是单元从开始到做完的跨度，竖线是目标日，红框表示会晚于目标日，✓ 是已完成。左右可以滑动。</div></section>
+  <section><h2>假期</h2><div class="card"><div class="hol">${P.holiday.map(({ date: d, title, items }) => {
+    const k = /SNS/.test(title) ? 'SNS' : /MCE/.test(title) ? 'MCE' : /EMgmt/.test(title) ? 'MGT' : /EM/.test(title) ? 'EM' : '';
+    const done = items.length && items.every((_, j) => st.hol[d + '#' + j]);
+    return `<div class="hol-c${d === t ? ' now' : ''}${done ? ' ok' : ''}" style="${k ? 'color:var(--c-' + k + ')' : ''}" title="${esc(items.join('；'))}"><span class="num">${md(d)}</span><b>${esc(title)}</b></div>`; }).join('')}</div></div></section>`;
+  return h;
+}
+function vUnits(t) {
+  let h = '';
+  Object.keys(P.courses).forEach(c => {
+    const us = P.units.filter(u => u.course === c);
+    const tot = us.reduce((a, u) => a + blocksOf(u, st), 0), rem = us.reduce((a, u) => a + remOf(u, st), 0);
+    h += `<section><div class="row"><h2>${chip(c)}${esc(P.courses[c].name)}</h2><span class="small muted num">${tot - rem}/${tot} 块</span></div>
+      <div class="bar" style="color:var(--c-${c})"><i style="width:${tot ? Math.round((tot - rem) / tot * 100) : 0}%"></i></div>
+      <div class="small muted">${esc(P.courses[c].exam)}</div><div class="card">`;
+    us.forEach(u => { const d = st.done[u.id];
+      h += `<div class="unit${d ? ' done' : ''}"><div><div class="title">${esc(u.title)}${u.kind === 'cw' ? '<span class="tag">coursework</span>' : u.kind === 'test' ? '<span class="tag">闭卷诊断</span>' : ''}</div>
+        <div class="small muted">${d ? '完成于 ' + md(d) : '截止 ' + md(u.due)}${u.fixed ? ' · ' + esc(u.fixed) : ''} · <span class="num">${st.part[u.id] || 0}/${blocksOf(u, st)}</span> 块 · ${esc(u.source)}</div></div>
+        <div class="acts">${d ? `<button class="btn tog on" aria-pressed="true" data-act="undo" data-id="${u.id}">已完成 ✓</button>` :
+          `<button class="btn ghost" data-act="adj" data-id="${u.id}" data-n="-1" aria-label="减少一块">−</button><button class="btn ghost" data-act="adj" data-id="${u.id}" data-n="1" aria-label="增加一块">+</button>${pullBtn(u, t)}<button class="btn tog" aria-pressed="false" data-act="done" data-id="${u.id}">未完成</button>`}</div></div>`; });
+    h += `</div></section>`; });
+  h += `<p class="small muted">块数是估计值，用 − 和 + 按实际调整，日程会跟着重排。要加、删、改单元本身，让 Codex 改 <code>public/plan/plan.json</code>。</p>`;
+  return h;
+}
+function vSettings() {
+  return `<section><h2>每天可用的学习块</h2><div class="card"><div class="caps">${[1, 2, 3, 4, 5, 6, 0].map(i =>
+    `<label for="cap-${i}">${WD[i]}<input id="cap-${i}" type="number" min="0" max="12" step="1" value="${st.cap[i]}" data-cap="${i}"></label>`).join('')}</div>
+    <div class="small muted">一块 ${P.blockMinutes} 分钟，不含上课和短复习。改完日程立刻重排。</div></div></section>
+    <section><h2>数据在哪</h2><div class="card small">
+    <div>计划：<a href="https://github.com/ZGQmoe/ZGQmoe.github.io/blob/main/public/plan/plan.json">public/plan/plan.json</a></div>
+    <div>进度：<a href="https://github.com/ZGQmoe/ZGQmoe.github.io/blob/main/public/plan/progress.json">public/plan/progress.json</a></div>
+    <div class="muted">Codex 和 Claude 改这两个文件、推送后，刷新页面就能看到。规则写在同目录的 AGENTS.md。</div></div></section>`;
+}
+function render() {
+  const t = today(), s = schedule(P, st, t);
+  strip(t, s); pendingBox();
+  const tabs = [['today', '今天'], ['timeline', '时间线'], ['sched', '日程'], ['deadlines', '截止'], ['holiday', '假期刷题'], ['units', '单元'], ['settings', '设置']];
+  if (!tabs.some(x => x[0] === tab)) tab = 'today';
+  document.getElementById('tabs').innerHTML = tabs.map(x => `<button role="tab" aria-selected="${tab === x[0]}" data-tab="${x[0]}">${x[1]}</button>`).join('');
+  document.getElementById('view').innerHTML = tab === 'today' ? vToday(t, s) : tab === 'timeline' ? vTimeline(t, s) : tab === 'sched' ? vSched(t, s) : tab === 'deadlines' ? vDeadlines(t) : tab === 'holiday' ? vHoliday(t, false) : tab === 'units' ? vUnits(t) : vSettings();
+}
+
+document.addEventListener('click', async e => {
+  if (!P) return;
+  const tb = e.target.closest('[data-tab]'); if (tb) { tab = tb.dataset.tab; try { history.replaceState(null, '', '#' + tab); } catch (x) {} render(); return; }
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const a = b.dataset.act, id = b.dataset.id, key = b.dataset.key, t = today();
+  if (a === 'copy') {
+    const text = `更新倒推计划进度：把 ZGQmoe.github.io 的 public/plan/progress.json 整个换成下面的内容，跑 node public/plan/check.mjs 确认通过，然后提交并 push 到 main。\n\n${progressJSON()}`;
+    try { await navigator.clipboard.writeText(text); copied = true; fallback = ''; } catch (x) { copied = false; fallback = text; }
+    render(); return;
+  }
+  if (a === 'discard') { st = normState(P, repo); save(); render(); return; }
+  if (a === 'done') { st.done[id] = t; delete st.pull[id]; P.reviews.forEach(r => { delete st.rev[id + '@' + r.off]; }); }
+  else if (a === 'undo') { delete st.done[id]; delete st.failed[id]; }
+  else if (a === 'pull') { st.pull[id] = t; }
+  else if (a === 'unpull') { delete st.pull[id]; }
+  else if (a === 'part') { st.part[id] = (st.part[id] || 0) + 1; (st.log[t] || (st.log[t] = {}))[id] = logged(id, t) + 1; }
+  else if (a === 'unpart') { if (logged(id, t) > 0) { st.log[t][id]--; if (!st.log[t][id]) delete st.log[t][id]; if (!Object.keys(st.log[t]).length) delete st.log[t]; st.part[id] = Math.max(0, (st.part[id] || 0) - 1); if (!st.part[id]) delete st.part[id]; } }
+  else if (a === 'adj') { const u = P.byId[id]; const n = Number(b.dataset.n); if (u.blocks + (st.adj[id] || 0) + n >= 1) { st.adj[id] = (st.adj[id] || 0) + n; if (!st.adj[id]) delete st.adj[id]; } }
+  else if (a === 'rev') { st.rev[key] = t; }
+  else if (a === 'unrev') { delete st.rev[key]; }
+  else if (a === 'fail') { st.failed[id] = { from: st.done[id], on: t, rev: P.reviews.map(r => st.rev[id + '@' + r.off] || null) }; st.done[id] = t; P.reviews.forEach(r => { delete st.rev[id + '@' + r.off]; }); }
+  else if (a === 'unfail') { const f = st.failed[id]; if (f) { st.done[id] = f.from; P.reviews.forEach((r, i) => { if (f.rev && f.rev[i]) st.rev[id + '@' + r.off] = f.rev[i]; }); delete st.failed[id]; } }
+  else if (a === 'dl') { if (st.dl[key]) delete st.dl[key]; else st.dl[key] = t; }
+  copied = false; fallback = ''; save(); render();
+});
+document.addEventListener('change', e => {
+  if (!P) return;
+  const el = e.target;
+  if (el.dataset && el.dataset.cap !== undefined) { st.cap[Number(el.dataset.cap)] = Math.max(0, Math.min(12, Math.round(Number(el.value) || 0))); }
+  else if (el.dataset && el.dataset.act === 'hol') { if (el.checked) st.hol[el.dataset.key] = today(); else delete st.hol[el.dataset.key]; }
+  else return;
+  copied = false; save(); render();
+});
+
+(async function init() {
+  try {
+    const [rawPlan, rawProg] = await Promise.all([getJSON('plan.json'), getJSON('progress.json')]);
+    P = loadPlan(rawPlan);
+    repo = normState(P, rawProg);
+    const loc = loadLocal();
+    st = loc && loc.st ? merge3(P, normState(P, loc.base), normState(P, loc.st), repo) : normState(P, repo);
+    save();
+    syncEl.textContent = `进度来自 repo（${rawProg.updated || '未注明日期'}）`;
+    render();
+  } catch (err) {
+    syncEl.textContent = '读不到 plan.json / progress.json';
+    document.getElementById('view').innerHTML = `<div class="note bad">计划文件读取失败：${esc(err.message)}。刷新试试；如果刚改过 JSON，可能是格式错了，让 Codex 跑 <code>node public/plan/check.mjs</code>。</div>`;
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,972 @@
+{
+  "_readme": "倒推计划的全部数据。规则见同目录 AGENTS.md；改完跑 node public/plan/check.mjs。",
+  "dates": {
+    "start": "2026-11-16",
+    "lastTaught": "2026-12-18",
+    "lastStudy": "2026-12-19",
+    "leave": "2026-12-20",
+    "back": "2027-01-13",
+    "exam": "2027-01-14"
+  },
+  "blockMinutes": 50,
+  "defaultCapacity": [
+    6,
+    3,
+    3,
+    5,
+    4,
+    3,
+    6
+  ],
+  "courses": {
+    "SNS": {
+      "code": "EEEN20131",
+      "name": "Signals and Systems",
+      "exam": "笔试 80%，2 小时，四道大题"
+    },
+    "MCE": {
+      "code": "EEEN20011",
+      "name": "Microcontroller Engineering",
+      "exam": "笔试 80%，2 小时，10 题"
+    },
+    "EM": {
+      "code": "EEEN20121",
+      "name": "Electromagnetic Fields",
+      "exam": "笔试 80%，2 小时"
+    },
+    "MGT": {
+      "code": "EEEN20051",
+      "name": "Engineering Management",
+      "exam": "往年卷 1 小时；今年权重待核对"
+    },
+    "ESP": {
+      "code": "EEEN21000",
+      "name": "Embedded Systems Project",
+      "exam": "无笔试，只有截止日期"
+    }
+  },
+  "reviews": [
+    {
+      "off": 1,
+      "min": 5,
+      "t": "D+1 闭卷回忆",
+      "how": "不翻材料，写出定义、公式和解题步骤"
+    },
+    {
+      "off": 3,
+      "min": 10,
+      "t": "D+3 混合重做",
+      "how": "和相邻单元的题混在一起，重做一道错题或同型题"
+    },
+    {
+      "off": 7,
+      "min": 15,
+      "t": "D+7 限时短测",
+      "how": "限时做一道题，按完成标准自查"
+    }
+  ],
+  "units": [
+    {
+      "id": "s05",
+      "course": "SNS",
+      "title": "Laplace 定义与 ROC",
+      "blocks": 2,
+      "due": "2026-11-18",
+      "source": "讲义 §8.2，pp.170–174",
+      "standard": "合上讲义：阶跃、指数、矩形脉冲各写出变换与 ROC，并判断虚轴是否在 ROC 内"
+    },
+    {
+      "id": "s01",
+      "course": "SNS",
+      "title": "Fourier Transform 性质与带宽",
+      "blocks": 2,
+      "due": "2026-11-19",
+      "source": "讲义 §7.3.3–7.4，pp.130–141",
+      "standard": "闭卷写出 multiplication、conjugation 性质，各用一次"
+    },
+    {
+      "id": "s06",
+      "course": "SNS",
+      "title": "用 Laplace 分析 LTI：导数带初值、部分分式、RC 阶跃",
+      "blocks": 2,
+      "due": "2026-11-20",
+      "source": "讲义 §8.3，pp.174–178",
+      "standard": "同一 RC 电路，分别算初始条件为零和非零时的输出"
+    },
+    {
+      "id": "s02",
+      "course": "SNS",
+      "title": "频域中的系统与无源滤波器",
+      "blocks": 2,
+      "due": "2026-11-21",
+      "source": "讲义 §7.5–7.6，pp.141–155",
+      "standard": "独立从输入频谱与 H(f) 得到输出"
+    },
+    {
+      "id": "s07",
+      "course": "SNS",
+      "title": "传递函数与一、二阶系统响应",
+      "blocks": 3,
+      "due": "2026-11-23",
+      "source": "讲义 §8.4，pp.178–189",
+      "standard": "从 ODE 得到 H(s)，写出阶跃响应，说明极点位置与响应形状的关系"
+    },
+    {
+      "id": "s03",
+      "course": "SNS",
+      "title": "FDom Exercises 1–10 全做",
+      "blocks": 3,
+      "due": "2026-11-24",
+      "source": "materials/weekly/2026-W43-frequency-domain",
+      "standard": "10 题第一遍不看答案，错题标错因"
+    },
+    {
+      "id": "s08",
+      "course": "SNS",
+      "title": "Bode 图",
+      "blocks": 2,
+      "due": "2026-11-26",
+      "source": "讲义 §8.5，pp.189–195",
+      "standard": "画一、二阶 Bode 图；由 Bode 图反推二阶传递函数（2025–26 卷 Q3 题型）"
+    },
+    {
+      "id": "s04",
+      "course": "SNS",
+      "title": "Ch.7 Problems 与 Exam questions",
+      "blocks": 3,
+      "due": "2026-11-27",
+      "source": "讲义 §7.7–7.8，pp.155–161",
+      "standard": "全部独立尝试，订正后合上答案重做关键步骤"
+    },
+    {
+      "id": "s09",
+      "course": "SNS",
+      "title": "Ch.8 Problems 与 Exam questions",
+      "blocks": 3,
+      "due": "2026-11-30",
+      "source": "讲义 §8.6–8.8，pp.195–202",
+      "standard": "全部独立尝试；逆变换与完整响应各至少两题无提示做对"
+    },
+    {
+      "id": "s10",
+      "course": "SNS",
+      "title": "s 域电路：元件模型、KVL/KCL、系统化分析",
+      "blocks": 3,
+      "due": "2026-12-02",
+      "source": "讲义 §9.2–9.5，pp.207–226",
+      "standard": "闭卷从 RC/RLC 电路选端口、列方程、求 H(s)"
+    },
+    {
+      "id": "s11",
+      "course": "SNS",
+      "title": "非零初始条件与运放有源电路（s 域滤波器）",
+      "blocks": 2,
+      "due": "2026-12-04",
+      "source": "讲义 §9.6–9.7，pp.226–239",
+      "standard": "带初值的电路求完整响应；写出一个有源滤波器的 H(s)"
+    },
+    {
+      "id": "s13",
+      "course": "SNS",
+      "title": "离散时间信号与系统、DT 卷积",
+      "blocks": 3,
+      "due": "2026-12-06",
+      "source": "讲义 Ch.12，pp.291–306（含 §12.5–12.6）",
+      "standard": "手算离散卷积；解释 aliasing",
+      "from": "2026-11-23"
+    },
+    {
+      "id": "s12",
+      "course": "SNS",
+      "title": "Ch.9 Problems",
+      "blocks": 3,
+      "due": "2026-12-07",
+      "source": "讲义 §9.8，pp.239–250",
+      "standard": "电路 → H(s) → 响应 → Bode 全流程至少两题"
+    },
+    {
+      "id": "s14",
+      "course": "SNS",
+      "title": "数值积分与微分",
+      "blocks": 2,
+      "due": "2026-12-09",
+      "source": "Canvas W10 对应讲次",
+      "standard": "按 Canvas 发布的题做完；能说明每种方法的误差来源",
+      "from": "2026-11-30"
+    },
+    {
+      "id": "s17",
+      "course": "SNS",
+      "title": "回补 Ch.2：信号运算与基本信号",
+      "blocks": 2,
+      "due": "2026-12-10",
+      "source": "讲义 §2.6–2.8，pp.35–40",
+      "standard": "Problems 与 Exam questions 闭卷做完"
+    },
+    {
+      "id": "s18",
+      "course": "SNS",
+      "title": "回补 Ch.3：系统性质",
+      "blocks": 2,
+      "due": "2026-12-11",
+      "source": "讲义 §3.5–3.7，pp.59–65",
+      "standard": "对给定系统判断线性、时不变、因果、稳定并写理由"
+    },
+    {
+      "id": "s20",
+      "course": "SNS",
+      "title": "Ch.4–5：二极管与整流电路、运放积分器与微分器",
+      "blocks": 2,
+      "due": "2026-12-12",
+      "source": "讲义 pp.67–100",
+      "standard": "画半波、桥式整流的输出波形；写出运放积分器、微分器的输入输出关系"
+    },
+    {
+      "id": "s23",
+      "course": "SNS",
+      "title": "Ch.10–11：非理想运放动态、DC 电机与二阶传递函数",
+      "blocks": 2,
+      "due": "2026-12-15",
+      "source": "讲义 pp.251–290",
+      "standard": "写出单极点运放模型的闭环传递函数；由 DC 电机模型得到二阶传递函数并说明阻尼的影响"
+    },
+    {
+      "id": "s19",
+      "course": "SNS",
+      "title": "回补 Ch.6：图解卷积、RC ODE → h(t)、s(t)、DC gain",
+      "blocks": 3,
+      "due": "2026-12-13",
+      "source": "讲义 §6.2–6.8，pp.103–119",
+      "standard": "画出卷积重叠区间；独立从 RC ODE 得到 step response、impulse response 和 DC gain"
+    },
+    {
+      "id": "s15",
+      "course": "SNS",
+      "title": "离散时间 Fourier",
+      "blocks": 3,
+      "due": "2026-12-14",
+      "source": "讲义 Ch.13，pp.307–324（含 §13.5–13.6）",
+      "standard": "DTFS、DTFT 各算一题；写出 DT 系统的频率响应",
+      "from": "2026-12-07"
+    },
+    {
+      "id": "s21",
+      "course": "SNS",
+      "title": "2023–24 卷四题闭卷诊断（120 分钟）+ 逐小问订正",
+      "blocks": 3,
+      "due": "2026-12-17",
+      "source": "复习文件夹 EEEN20131/2023-24_Exam_Paper.pdf，官方解答同目录",
+      "standard": "四道大题都有独立作答；每个失分点记原因",
+      "from": "2026-12-12",
+      "kind": "test"
+    },
+    {
+      "id": "s16",
+      "course": "SNS",
+      "title": "z-transform 与离散滤波器",
+      "blocks": 3,
+      "due": "2026-12-18",
+      "source": "讲义 Ch.14，pp.325–335（含 §14.6–14.7）",
+      "standard": "求 z 变换与 ROC；由差分方程得到 H(z) 并判断稳定性",
+      "from": "2026-12-10"
+    },
+    {
+      "id": "s22",
+      "course": "SNS",
+      "title": "Lab 3 准备与上机",
+      "blocks": 2,
+      "due": "2026-11-26",
+      "source": "Canvas Modules → Lab information",
+      "standard": "准备任务全部做完，无提示重跑一遍",
+      "from": "2026-11-23",
+      "kind": "cw",
+      "fixed": "W9 上机，当场交 Canvas quiz，占总评 7%"
+    },
+    {
+      "id": "m05",
+      "course": "MCE",
+      "title": "Interrupts、exceptions、STM32 中断（L10–12）",
+      "blocks": 3,
+      "due": "2026-11-22",
+      "source": "Combined Notes Lecture 10–12；Canvas Lecture 12 Review quiz",
+      "standard": "解释 maskable interrupt、PRIMASK、EXTI 触发方式；读一段 ISR 代码说出执行顺序"
+    },
+    {
+      "id": "m06",
+      "course": "MCE",
+      "title": "Timers 与 STM32 定时器（L13–14）",
+      "blocks": 2,
+      "due": "2026-11-24",
+      "source": "Combined Notes Lecture 13–14；Canvas Lecture 14 Review quiz",
+      "standard": "手算 prescaler、计数上限与定时周期"
+    },
+    {
+      "id": "m01",
+      "course": "MCE",
+      "title": "嵌入式系统概念、STM32F401RE 架构与 memory map（L1–2）",
+      "blocks": 2,
+      "due": "2026-11-25",
+      "source": "Combined Notes Lecture 1–2；Canvas Lecture 2 Review quiz",
+      "standard": "闭卷回答地址空间大小、memory mapping、三级流水线"
+    },
+    {
+      "id": "m02",
+      "course": "MCE",
+      "title": "Digital IO / GPIO（L3）",
+      "blocks": 1,
+      "due": "2026-11-26",
+      "source": "Combined Notes Lecture 3；Canvas Lecture 3 Review quiz",
+      "standard": "画出 GPIO 输入级简图并说明两种输出模式"
+    },
+    {
+      "id": "m03",
+      "course": "MCE",
+      "title": "Mbed 抽象与 C++ 类（L4–7）",
+      "blocks": 3,
+      "due": "2026-11-29",
+      "source": "Combined Notes Lecture 4–7；code/EEEN20011_Button_Class_Practice；Canvas Lecture 5、7 Review quiz",
+      "standard": "闭卷解释 `LED red(D5);` 里的 object、argument、constructor、member initializer list；说清 overloading、const、selector/modifier"
+    },
+    {
+      "id": "m04",
+      "course": "MCE",
+      "title": "ADC：sample-hold、逐次逼近、量化计算（L8–9）",
+      "blocks": 2,
+      "due": "2026-12-01",
+      "source": "Combined Notes Lecture 8–9；Canvas Lecture 9 Review quiz",
+      "standard": "画 sample-hold 级；算 n 位 ADC 的分辨率与量化结果"
+    },
+    {
+      "id": "m07",
+      "course": "MCE",
+      "title": "Task 2 准备：interrupts + FSM",
+      "blocks": 4,
+      "due": "2026-12-03",
+      "source": "Canvas Task 2 brief；code/EEEN20011_Project_Template",
+      "standard": "能现场演示并逐句解释代码",
+      "kind": "cw",
+      "fixed": "12/04 09:00 Group 02 的 W10 lab 现场考核"
+    },
+    {
+      "id": "m08",
+      "course": "MCE",
+      "title": "Inheritance 与 C++ 内存分配（L15–16）",
+      "blocks": 2,
+      "due": "2026-12-05",
+      "source": "Combined Notes Lecture 15–16；Canvas Lecture 16 Review quiz",
+      "standard": "写一个派生类；说明 stack 与 heap 分配的区别和风险",
+      "from": "2026-11-23"
+    },
+    {
+      "id": "m09",
+      "course": "MCE",
+      "title": "串行通信与 USART（L17–18）",
+      "blocks": 3,
+      "due": "2026-12-10",
+      "source": "Combined Notes Lecture 17–18；Canvas Lecture 18 Review quiz",
+      "standard": "画一帧 UART 时序；算波特率相关参数",
+      "from": "2026-11-30"
+    },
+    {
+      "id": "m10",
+      "course": "MCE",
+      "title": "高级通信协议、buffering 与 concurrency（L19–20）",
+      "blocks": 2,
+      "due": "2026-12-15",
+      "source": "Combined Notes Lecture 19–20",
+      "standard": "比较几种协议的连线与时序；解释缓冲区为什么需要",
+      "from": "2026-12-07"
+    },
+    {
+      "id": "m11",
+      "course": "MCE",
+      "title": "Example Programs 通读：读代码预言行为",
+      "blocks": 3,
+      "due": "2026-12-17",
+      "source": "materials/core/EEEN20011 - Example Programs.pdf",
+      "standard": "每个例程先写出预期行为再对照；能定位一处故障"
+    },
+    {
+      "id": "e01",
+      "course": "EM",
+      "title": "Coulomb 定律、电场、电位",
+      "blocks": 2,
+      "due": "2026-11-21",
+      "source": "Canvas Modules W1–2；自测：Coulomb's law Quiz、Electric field Quiz、Electric potential Quiz",
+      "standard": "闭卷写定义；算点电荷系的 E 与电位；三个 quiz 做完"
+    },
+    {
+      "id": "e06",
+      "course": "EM",
+      "title": "Biot–Savart（W8）",
+      "blocks": 2,
+      "due": "2026-11-22",
+      "source": "Canvas Modules W8",
+      "standard": "写出矢量形式并算直导线、圆环的 B"
+    },
+    {
+      "id": "e05",
+      "course": "EM",
+      "title": "Lab 1 报告：图、单位、实验与仿真对应",
+      "blocks": 3,
+      "due": "2026-11-24",
+      "source": "Canvas Lab 1；Electric_Field_Mapping_Report_Updated.docx",
+      "standard": "对照报告要求逐项核对后提交",
+      "kind": "cw",
+      "fixed": "11-25 14:00 截止"
+    },
+    {
+      "id": "e02",
+      "course": "EM",
+      "title": "E flux、flux density 与 Gauss 定律",
+      "blocks": 3,
+      "due": "2026-11-25",
+      "source": "Canvas Modules W2–3；自测：E flux, density and Gauss's law",
+      "standard": "每题写出所选曲面和选它的理由，独立推导 E；quiz 做完"
+    },
+    {
+      "id": "e03",
+      "course": "EM",
+      "title": "电流、Kirchhoff 电流定律、导体与绝缘体",
+      "blocks": 2,
+      "due": "2026-11-28",
+      "source": "Canvas Modules W3–4；自测：Current flow Quiz、Kirchhoff's current law Quiz、Conductor and insulator Quiz",
+      "standard": "推导半球接地电极的 J、电压与电阻（旧卷 Q1 题型）；三个 quiz 做完"
+    },
+    {
+      "id": "e07",
+      "course": "EM",
+      "title": "Ampère 定律（W9）",
+      "blocks": 2,
+      "due": "2026-11-29",
+      "source": "Canvas Modules W9",
+      "standard": "写出所选回路与理由，推导长直导线、螺线管的 B",
+      "from": "2026-11-23"
+    },
+    {
+      "id": "e04",
+      "course": "EM",
+      "title": "电容与电介质、边界条件",
+      "blocks": 3,
+      "due": "2026-12-01",
+      "source": "Canvas Modules W4–5；自测：Capacitor Quiz",
+      "standard": "由 Gauss 定律推平板、同轴电容；写出两种介质界面的边界条件；quiz 做完"
+    },
+    {
+      "id": "e08",
+      "course": "EM",
+      "title": "Faraday 定律（W10）",
+      "blocks": 2,
+      "due": "2026-12-06",
+      "source": "Canvas Modules W10",
+      "standard": "写积分与微分形式；算感应电动势并判断方向",
+      "from": "2026-11-30"
+    },
+    {
+      "id": "e09",
+      "course": "EM",
+      "title": "电感与互感（W11）",
+      "blocks": 2,
+      "due": "2026-12-13",
+      "source": "Canvas Modules W11",
+      "standard": "推导螺线管自感、两回路互感",
+      "from": "2026-12-07"
+    },
+    {
+      "id": "e10",
+      "course": "EM",
+      "title": "Magnetic storage and devices（W12）",
+      "blocks": 2,
+      "due": "2026-12-17",
+      "source": "Canvas Modules W12",
+      "standard": "按 Canvas 发布的题做完",
+      "from": "2026-12-14"
+    },
+    {
+      "id": "e11",
+      "course": "EM",
+      "title": "电场 + 磁场混合推导闭卷自测",
+      "blocks": 2,
+      "due": "2026-12-18",
+      "source": "自选：Gauss、电容、Biot–Savart/Ampère、Faraday、互感各一题",
+      "standard": "每题写出曲面或回路、选律理由、方向、单位",
+      "from": "2026-12-14",
+      "kind": "test"
+    },
+    {
+      "id": "e12",
+      "course": "EM",
+      "title": "Lab 2（iron-cored inductor）准备",
+      "blocks": 2,
+      "due": "2026-12-11",
+      "source": "Canvas Modules → Lab 2",
+      "standard": "读完实验说明，能说出每一步测什么、为什么",
+      "from": "2026-11-30",
+      "kind": "cw",
+      "fixed": "现场考核，占总评 10%，日期待公布"
+    },
+    {
+      "id": "g01",
+      "course": "MGT",
+      "title": "Coursework：project cost 与 product cost 的金额来源、假设、边界",
+      "blocks": 3,
+      "due": "2026-11-22",
+      "source": "Canvas Coursework Brief；手头 cost draft",
+      "standard": "交给小组的版本每个数字都能追到来源",
+      "kind": "cw",
+      "fixed": "11-23 前交给小组"
+    },
+    {
+      "id": "g02",
+      "course": "MGT",
+      "title": "Coursework：与 Gantt、risk 的一致性复核 + 个人 commentary",
+      "blocks": 3,
+      "due": "2026-11-25",
+      "source": "Canvas Coursework Brief",
+      "standard": "四份小组材料互相对得上；个人稿完成",
+      "kind": "cw",
+      "fixed": "11-27 14:00 截止"
+    },
+    {
+      "id": "g04",
+      "course": "MGT",
+      "title": "W8 Leadership and team working",
+      "blocks": 1,
+      "due": "2026-11-28",
+      "source": "Canvas Modules W8",
+      "standard": "一道短答：定义 → 案例事实 → 推论",
+      "from": "2026-11-18"
+    },
+    {
+      "id": "g05",
+      "course": "MGT",
+      "title": "W9 IP management",
+      "blocks": 1,
+      "due": "2026-12-03",
+      "source": "Canvas Modules W9",
+      "standard": "一道短答：定义 → 案例事实 → 推论",
+      "from": "2026-11-25"
+    },
+    {
+      "id": "g03",
+      "course": "MGT",
+      "title": "W1–W5 exam-style questions 全做并对答案",
+      "blocks": 4,
+      "due": "2026-12-08",
+      "source": "Canvas Modules W1–W5",
+      "standard": "全部题独立作答；WBS、Gantt、stage gate、product lifecycle 各能写出定义和用途"
+    },
+    {
+      "id": "g06",
+      "course": "MGT",
+      "title": "W10 Legal frameworks 与 business management systems",
+      "blocks": 1,
+      "due": "2026-12-09",
+      "source": "Canvas Modules W10",
+      "standard": "一道短答：定义 → 案例事实 → 推论",
+      "from": "2026-12-02"
+    },
+    {
+      "id": "g07",
+      "course": "MGT",
+      "title": "W11 Ethics",
+      "blocks": 1,
+      "due": "2026-12-14",
+      "source": "Canvas Modules W11",
+      "standard": "一道场景论证短答",
+      "from": "2026-12-09"
+    },
+    {
+      "id": "g08",
+      "course": "MGT",
+      "title": "W12 Revision 课 + Gantt 与资源成本计算题",
+      "blocks": 2,
+      "due": "2026-12-18",
+      "source": "Canvas Modules W12",
+      "standard": "限时做一道 Gantt/成本计算题；记下老师说的考试范围",
+      "from": "2026-12-16"
+    },
+    {
+      "id": "p01",
+      "course": "ESP",
+      "title": "DR2 整稿：传感器、控制、camera 取舍",
+      "blocks": 6,
+      "due": "2026-11-29",
+      "source": "Canvas ESP timetable 与 markschemes",
+      "standard": "每项写成 要求 → 结果 → 决定，证据可追溯",
+      "kind": "cw",
+      "fixed": "W9 完成整稿"
+    },
+    {
+      "id": "p02",
+      "course": "ESP",
+      "title": "DR2 小组复审并提交",
+      "blocks": 2,
+      "due": "2026-12-03",
+      "source": "Canvas ESP 提交项",
+      "standard": "三分钟讲清自己的贡献和证据",
+      "from": "2026-11-30",
+      "kind": "cw",
+      "fixed": "12-04 14:00 截止"
+    },
+    {
+      "id": "p03",
+      "course": "ESP",
+      "title": "Peer review",
+      "blocks": 2,
+      "due": "2026-12-10",
+      "source": "Canvas ESP 提交项",
+      "standard": "逐项按 rubric 填完",
+      "from": "2026-12-05",
+      "kind": "cw",
+      "fixed": "12-11 14:00 截止"
+    },
+    {
+      "id": "p04",
+      "course": "ESP",
+      "title": "DXF 文件",
+      "blocks": 2,
+      "due": "2026-12-17",
+      "source": "Canvas ESP 提交项",
+      "standard": "文件逐项核对后提交",
+      "from": "2026-12-07",
+      "kind": "cw",
+      "fixed": "12-18 14:00 截止"
+    }
+  ],
+  "deadlines": [
+    {
+      "id": "d1117-esp-lab",
+      "date": "2026-11-17",
+      "time": "15:00–18:00",
+      "course": "ESP",
+      "what": "Project lab：补传感器原始读数与可重复条件",
+      "kind": "lab"
+    },
+    {
+      "id": "d1120-mce-lab",
+      "date": "2026-11-20",
+      "time": "09:00–11:00",
+      "course": "MCE",
+      "what": "Lab（Group 02，自愿参加，可以问 Task 2 的问题）",
+      "kind": "lab"
+    },
+    {
+      "id": "d1123-mgt-report",
+      "date": "2026-11-23",
+      "time": "",
+      "course": "MGT",
+      "what": "两份 cost 的金额来源、假设、边界交给小组",
+      "kind": "report"
+    },
+    {
+      "id": "d1125-em-report",
+      "date": "2026-11-25",
+      "time": "14:00",
+      "course": "EM",
+      "what": "Lab 1 report (Group 02) 提交，占总评 10%",
+      "kind": "report"
+    },
+    {
+      "id": "d1127-sns-lab",
+      "date": "2026-11-27",
+      "time": "",
+      "course": "SNS",
+      "what": "Lab 3：W9 内上机，当场交 Canvas quiz，占总评 7%，时段看课表",
+      "kind": "lab"
+    },
+    {
+      "id": "d1127-mgt-report",
+      "date": "2026-11-27",
+      "time": "14:00",
+      "course": "MGT",
+      "what": "Coursework 五项提交：Gantt Chart、Predicted Project Cost、Predicted Cost of Final Buggy、Risk Register、Individual Commentary（各 10%）",
+      "kind": "report"
+    },
+    {
+      "id": "d1129-esp-report",
+      "date": "2026-11-29",
+      "time": "",
+      "course": "ESP",
+      "what": "DR2 整稿完成（W9）",
+      "kind": "report"
+    },
+    {
+      "id": "d1204-mce-lab",
+      "date": "2026-12-04",
+      "time": "09:00–11:00",
+      "course": "MCE",
+      "what": "Task 2 现场考核，占总评 14%（Group 02 的 W10 lab，按课表推算）",
+      "kind": "lab"
+    },
+    {
+      "id": "d1204-esp-report",
+      "date": "2026-12-04",
+      "time": "14:00",
+      "course": "ESP",
+      "what": "DR2 提交",
+      "kind": "report"
+    },
+    {
+      "id": "d1207-all-info",
+      "date": "2026-12-07",
+      "time": "",
+      "course": "全科",
+      "what": "考试总表在这一周公布：拿到日期后调整各科最后两次模拟",
+      "kind": "info"
+    },
+    {
+      "id": "d1211-esp-report",
+      "date": "2026-12-11",
+      "time": "14:00",
+      "course": "ESP",
+      "what": "Peer review 提交",
+      "kind": "report"
+    },
+    {
+      "id": "d1218-esp-report",
+      "date": "2026-12-18",
+      "time": "14:00",
+      "course": "ESP",
+      "what": "DXF 提交",
+      "kind": "report"
+    },
+    {
+      "id": "d1221-all-info",
+      "date": "2026-12-21",
+      "time": "",
+      "course": "全科",
+      "what": "个人考试时间表在这一周开放",
+      "kind": "info"
+    }
+  ],
+  "undated": [
+    {
+      "course": "EM",
+      "what": "Lab 2 iron-cored inductor：现场考核，占总评 10%，Canvas 写的是日期待公布"
+    },
+    {
+      "course": "ESP",
+      "what": "Canvas 上未交且没写截止：API Documentation、Sensor Circuit Schematic、Sensor Circuit PCB or Stripboard、Wiring Diagram"
+    },
+    {
+      "course": "SNS",
+      "what": "Second part of Lab 1: Training exercise for Lab 2，未交，没写截止"
+    },
+    {
+      "course": "MCE",
+      "what": "Lecture 2、3、5、7、9、12、14、16、18 的 Review quiz 都还没做，没有截止，已并进对应单元"
+    },
+    {
+      "course": "EM",
+      "what": "八个自测 quiz 都还没做，没有截止，已并进电场四个单元"
+    }
+  ],
+  "holiday": [
+    {
+      "date": "2026-12-21",
+      "title": "路上、休息",
+      "items": [
+        "默写各科公式与定义清单（10 分钟）"
+      ]
+    },
+    {
+      "date": "2026-12-22",
+      "title": "MCE 诊断",
+      "items": [
+        "MCE 2023–24 卷，120 分钟闭卷"
+      ]
+    },
+    {
+      "date": "2026-12-23",
+      "title": "MCE 订正",
+      "items": [
+        "逐小问记失分原因",
+        "合上答案重做关键步骤"
+      ]
+    },
+    {
+      "date": "2026-12-24",
+      "title": "EM 诊断",
+      "items": [
+        "EEEN10222 2023–24 卷，120 分钟，只做和今年范围重合的题"
+      ]
+    },
+    {
+      "date": "2026-12-25",
+      "title": "休息",
+      "items": []
+    },
+    {
+      "date": "2026-12-26",
+      "title": "EM 订正",
+      "items": [
+        "EM 订正并重做",
+        "MCE 12-22 错题第二次重做"
+      ]
+    },
+    {
+      "date": "2026-12-27",
+      "title": "EMgmt 诊断",
+      "items": [
+        "EMgmt 2023–24 卷，60 分钟 + 订正",
+        "SNS 离校前那套 2023–24 的错题限时重做"
+      ]
+    },
+    {
+      "date": "2026-12-28",
+      "title": "SNS 专题：Q1 类",
+      "items": [
+        "连续时间信号与系统：讲义 §2.7、§3.6 Exam questions"
+      ]
+    },
+    {
+      "date": "2026-12-29",
+      "title": "SNS 专题：Q2 类",
+      "items": [
+        "卷积与 Fourier：讲义 §6.7、§7.8 Exam questions"
+      ]
+    },
+    {
+      "date": "2026-12-30",
+      "title": "SNS 专题：Q3 类",
+      "items": [
+        "Laplace、系统响应、Bode：讲义 §8.7，加 §9.8 选两题"
+      ]
+    },
+    {
+      "date": "2026-12-31",
+      "title": "SNS 专题：Q4 类",
+      "items": [
+        "离散时间：讲义 §12.6、§13.6、§14.7 Exam questions"
+      ]
+    },
+    {
+      "date": "2027-01-01",
+      "title": "休息",
+      "items": []
+    },
+    {
+      "date": "2027-01-02",
+      "title": "MCE、EM 专题",
+      "items": [
+        "MCE 四类各手写一题：C++/ADC、interrupts/timers、FSM、memory/serial",
+        "EM 推导各一题：Gauss、电容、Biot–Savart/Ampère、Faraday、互感"
+      ]
+    },
+    {
+      "date": "2027-01-03",
+      "title": "弹性日",
+      "items": [
+        "补本周没做完的",
+        "全科错题换一道同型题复测"
+      ]
+    },
+    {
+      "date": "2027-01-04",
+      "title": "SNS 模拟一",
+      "items": [
+        "SNS 2024–25 整卷，120 分钟，合卷后再看解答"
+      ]
+    },
+    {
+      "date": "2027-01-05",
+      "title": "SNS 订正 + EMgmt",
+      "items": [
+        "对官方解答按给分点订正",
+        "EMgmt 2024–25 卷，60 分钟"
+      ]
+    },
+    {
+      "date": "2027-01-06",
+      "title": "MCE 模拟",
+      "items": [
+        "MCE 2024–25 整卷，120 分钟"
+      ]
+    },
+    {
+      "date": "2027-01-07",
+      "title": "MCE、EMgmt 订正",
+      "items": [
+        "MCE 订正并重做",
+        "EMgmt 订正"
+      ]
+    },
+    {
+      "date": "2027-01-08",
+      "title": "EM 模拟",
+      "items": [
+        "EEEN10222 2024–25 卷，120 分钟"
+      ]
+    },
+    {
+      "date": "2027-01-09",
+      "title": "EM 订正",
+      "items": [
+        "EM 订正并重做",
+        "SNS 01-04 错题第二次重做"
+      ]
+    },
+    {
+      "date": "2027-01-10",
+      "title": "SNS 模拟二",
+      "items": [
+        "SNS 2025–26 整卷，120 分钟"
+      ]
+    },
+    {
+      "date": "2027-01-11",
+      "title": "SNS 订正",
+      "items": [
+        "对官方解答按给分点订正",
+        "MCE 错题重做"
+      ]
+    },
+    {
+      "date": "2027-01-12",
+      "title": "收尾",
+      "items": [
+        "EMgmt 2025–26 卷，60 分钟 + 订正",
+        "全科错题最后一轮"
+      ]
+    },
+    {
+      "date": "2027-01-13",
+      "title": "返程",
+      "items": [
+        "公式与定义默写（15 分钟）",
+        "早睡"
+      ]
+    }
+  ],
+  "print": [
+    {
+      "course": "SNS",
+      "what": "2023–24、2024–25、2025–26 三套题卷；三套官方解答单独装订，做完再看"
+    },
+    {
+      "course": "SNS",
+      "what": "讲义各章 Exam questions：§2.7、§3.6、§6.7、§7.8、§8.7、§9.8、§12.6、§13.6、§14.7"
+    },
+    {
+      "course": "SNS",
+      "what": "Laplace 变换表 §8.9（p.202）、z 变换表 §14.5（p.333）、Solution Manual 对应章节"
+    },
+    {
+      "course": "MCE",
+      "what": "2023–24、2024–25 两套题卷；Example Programs"
+    },
+    {
+      "course": "EM",
+      "what": "EEEN10222 2023–24、2024–25 两套旧课卷"
+    },
+    {
+      "course": "MGT",
+      "what": "2023–24、2024–25、2025–26 三套题卷；W1–W5 exam-style questions 与答案"
+    },
+    {
+      "course": "全科",
+      "what": "空白答题纸；各科一页公式与定义清单（自己手写）"
+    }
+  ]
+}
