@@ -67,6 +67,16 @@
   ],
   "units": [
     {
+      "id": "s24",
+      "course": "SNS",
+      "title": "Laplace 讲义精读：定义、初值与 RC/RLC 响应",
+      "blocks": 1,
+      "from": "2026-11-17",
+      "due": "2026-11-17",
+      "source": "Canvas → Lecture Notes and Solution manual → Signals_and_System_15Nov.pdf，§8.2–8.4，从印刷页 170 读到 §8.5 Bode 图标题前",
+      "standard": "按原讲义读完 §8.2–8.4；在 RC 例题标出初值项，在 RLC 例题指出瞬态和稳态分别来自哪组极点；卡住的步骤记页码"
+    },
+    {
       "id": "s05",
       "course": "SNS",
       "title": "Laplace 定义与 ROC",
