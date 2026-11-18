@@ -12,10 +12,9 @@ export const FRIEND_GROUPS: { title: string; friends: Friend[] }[] = [
   },
 ];
 
-// 别人来交换友链时可以抄的信息
+// 别人来交换友链时可以抄的信息。desc 不在这里写死，而是从 src/data/quotes.ts 里随机抽。
 export const MY_CARD = {
   name: "TOMOchan",
   href: "https://zgqmoe.github.io",
-  description: "曼大 EEE · 项目、笔记、分析与杂文",
   avatar: "https://github.com/ZGQmoe.png",
 };

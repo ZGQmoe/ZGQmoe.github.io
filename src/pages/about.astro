@@ -10,13 +10,18 @@ import { SOCIALS } from "../config";
       <h1>关于</h1>
     </header>
     <div class="prose">
-      <p>你好，我是 Guanqi，网名 TOMOchan。现在在曼彻斯特大学读电子电气工程（EEE），2028 届。</p>
-      <p>这里放我在做的项目、课程笔记、课外学到的小东西，还有对游戏和作品的一些分析和杂文。</p>
-      <h2>这个站</h2>
-      <p>
-        用 <a href="https://astro.build">Astro</a> 搭建，托管在 GitHub Pages。首页的 ASCII 鲨鱼来自
-        <a href="https://github.com/stackedlol/ascii-sharks">stackedlol/ascii-sharks</a>（MIT），换成了蓝色渐变配色。
-      </p>
+      <p>我是 ZGQ / TOMOchan / 其他还有很多马甲，现 UoM 电子电气本科生。</p>
+      <p>本站包含我不上课的时候都在干的一些事情，关于其中任何项目如有 feedback 欢迎联系。</p>
+      <p>喜欢二次元 / 日推 / 舞萌。</p>
+      <h2>本站</h2>
+      <ul>
+        <li>框架：<a href="https://astro.build">Astro</a>（静态站点生成器），页面用 <code>.astro</code> 组件 + TypeScript 写，构建出来是纯静态 HTML。</li>
+        <li>托管与部署：GitHub Pages。推送到 <code>main</code> 后由 GitHub Actions 自动构建、发布。</li>
+        <li>文章：Markdown + Astro Content Collections，公式用 KaTeX 渲染；有 RSS。</li>
+        <li>专业笔记：不放在本仓库，构建前由脚本从各课程笔记仓库浅克隆并转换；Actions 每 30 分钟检查一次笔记仓库有没有新提交，有才重新构建。</li>
+        <li>首页鲨鱼：改自 <a href="https://github.com/stackedlol/ascii-sharks">stackedlol/ascii-sharks</a>（MIT），在 canvas 上实时绘制的 ASCII 动画，换成了深浅蓝渐变配色。</li>
+        <li>源码：<a href="https://github.com/ZGQmoe/ZGQmoe.github.io">ZGQmoe/ZGQmoe.github.io</a>。</li>
+      </ul>
     </div>
     <div class="links">
       {

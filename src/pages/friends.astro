@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import { FRIEND_GROUPS, MY_CARD } from "../data/friends";
+import { QUOTES } from "../data/quotes";
 
 const total = FRIEND_GROUPS.reduce((n, g) => n + g.friends.length, 0);
 ---
@@ -9,7 +10,7 @@ const total = FRIEND_GROUPS.reduce((n, g) => n + g.friends.length, 0);
   <div class="wrap">
     <header class="page-head">
       <h1>友链</h1>
-      <p>朋友们的小站。</p>
+      <p>我的好朋友们。</p>
     </header>
 
     {
@@ -41,14 +42,51 @@ const total = FRIEND_GROUPS.reduce((n, g) => n + g.friends.length, 0);
 
     <section class="exchange">
       <h2 class="section-title">交换友链</h2>
-      <p class="muted">在 GitHub 上给我发 issue 或者直接联系我，带上下面这些信息就行：</p>
-      <pre class="mono">{`name: ${MY_CARD.name}
-link: ${MY_CARD.href}
-desc: ${MY_CARD.description}
-avatar: ${MY_CARD.avatar}`}</pre>
+      <p class="muted">通过 GitHub：<a href="https://github.com/ZGQmoe">@ZGQmoe</a></p>
+      <div class="card-box" data-quotes={JSON.stringify(QUOTES)}>
+        <pre class="mono">name: {MY_CARD.name}
+link: {MY_CARD.href}
+desc: <span class="q">{QUOTES[0]}</span>
+avatar: {MY_CARD.avatar}</pre>
+        <button class="copy mono" type="button">复制</button>
+      </div>
+      <p class="hint muted">desc 是从我喜欢的句子里随机抽的，每次复制完都会换一句。</p>
     </section>
   </div>
 </Base>
+
+<script>
+  function setupCard() {
+    const box = document.querySelector<HTMLElement>(".card-box");
+    if (!box || box.dataset.ready) return;
+    box.dataset.ready = "1";
+    const quotes: string[] = JSON.parse(box.dataset.quotes || "[]");
+    const q = box.querySelector<HTMLElement>(".q")!;
+    const pre = box.querySelector("pre")!;
+    const btn = box.querySelector<HTMLButtonElement>(".copy")!;
+    // 换一句，并且尽量不和当前这句重复
+    const next = () => {
+      if (quotes.length < 2) return;
+      let s = q.textContent;
+      while (s === q.textContent) s = quotes[Math.floor(Math.random() * quotes.length)];
+      q.textContent = s;
+    };
+    next();
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(pre.innerText);
+        btn.textContent = "已复制 ✓";
+      } catch {
+        btn.textContent = "复制失败";
+      }
+      setTimeout(() => {
+        btn.textContent = "复制";
+        next();
+      }, 1200);
+    });
+  }
+  document.addEventListener("astro:page-load", setupCard);
+</script>
 
 <style>
   .group + .group {
@@ -107,8 +145,34 @@ avatar: ${MY_CARD.avatar}`}</pre>
   .exchange {
     margin-top: 48px;
   }
+  .card-box {
+    position: relative;
+  }
+  .copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--bg-raise);
+    color: var(--fg);
+    cursor: pointer;
+  }
+  .copy:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .q {
+    transition: opacity 0.2s;
+  }
+  .hint {
+    font-size: 13px;
+    margin-top: 8px;
+  }
   pre {
-    padding: 14px 16px;
+    padding: 14px 72px 14px 16px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--code-bg);

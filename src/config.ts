@@ -6,6 +6,8 @@ export const SITE = {
   description: "Guanqi 的个人小站：项目、笔记、分析与杂文。",
   tagline: "EEE28'@UoM",
   bio: "曼大 EEE 在读。写点代码，记点笔记，偶尔分析游戏和作品。",
+  /** 页脚 © 后面显示的名字 */
+  footerName: "ZGQmoe",
   startYear: 2026,
   /** 页脚「本站已运行 N 天」的起点 */
   since: "2026-11-09",
