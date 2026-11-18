@@ -11,19 +11,10 @@ export const SITE = {
   /** 页脚「本站已运行 N 天」的起点 */
   since: "2026-11-09",
   /**
-   * 首页名字下面轮播打字的几句话（Swift 风格的一行代码）。
-   * {shark} 会换成这次背景里正在游的某一条鲨鱼，每轮随机挑一条。
+   * 首页名字下面打字打出来的一行（Swift 风格）。只有一句时打完就停住。
+   * {shark} 会换成这次背景里正在游的某一条鲨鱼。想轮播就多写几句。
    */
-  typewriter: [
-    "world.execute(me)",
-    "sealife.observing({shark})",
-    "ocean.dive(into: .deep)",
-    "me.drift(with: .current)",
-    "sunlight.fade(below: 200.m)",
-    "zone = .twilight",
-    "sealife.observing({shark})",
-    "await surface()",
-  ],
+  typewriter: ["ocean.dive(into: .deep) { observe({shark}) }"],
 };
 
 export const NAV = [

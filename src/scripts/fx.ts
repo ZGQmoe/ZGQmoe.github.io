@@ -125,18 +125,20 @@ document.addEventListener("astro:page-load", () => {
         let w = 0;
         let n = 0;
         let deleting = false;
-        let word = fill(words[0]);
+        let word = "";
         const step = () => {
+          // 每句开打时才决定鲨鱼名，保证背景已经挑好鲨鱼
+          if (!deleting && n === 0) word = fill(words[w]);
           n += deleting ? -1 : 1;
           out.textContent = word.slice(0, n);
           let delay = deleting ? 40 : 90;
           if (!deleting && n === word.length) {
+            if (words.length === 1) return; // 只有一句：打完停住，光标继续闪
             deleting = true;
             delay = 1800;
           } else if (deleting && n === 0) {
             deleting = false;
             w = (w + 1) % words.length;
-            word = fill(words[w]);
             delay = 350;
           }
           typeTimer = window.setTimeout(step, delay);
