@@ -107,43 +107,96 @@ document.addEventListener("astro:page-load", () => {
     nurse: ".nurseShark",
     classic: ".shark",
   };
-  const fill = (s: string) => {
-    if (!s.includes("{shark}")) return s;
+  // 这次背景里正在游的鲨鱼（Ocean.astro 挑好后挂在 window.__sharks 上）
+  const sharkNames = () => {
     const seen: string[] = (window as any).__sharks || [];
-    const kind = seen.length ? seen[Math.floor(Math.random() * seen.length)] : "classic";
-    return s.replace("{shark}", SHARK_CASE[kind] || ".shark");
+    const names = seen.map((k) => SHARK_CASE[k] || ".shark");
+    return names.length ? names : [".shark"];
   };
   clearTimeout(typeTimer);
   const tw = document.querySelector<HTMLElement>("[data-typewriter]");
-  if (tw) {
-    const words: string[] = JSON.parse(tw.dataset.typewriter || "[]");
-    const out = tw.querySelector<HTMLElement>(".tw-text");
-    if (out && words.length) {
+  const out = tw?.querySelector<HTMLElement>(".tw-text");
+  const cursor = tw?.querySelector<HTMLElement>(".cursor");
+  const words: string[] = tw ? JSON.parse(tw.dataset.typewriter || "[]") : [];
+  const wait = (ms: number) => new Promise<void>((r) => (typeTimer = window.setTimeout(r, ms)));
+  const token = {}; // 换页后旧的循环自动退出
+  (window as any).__twToken = token;
+  const alive = () => (window as any).__twToken === token && out?.isConnected;
+
+  if (tw && out && cursor && words.length) {
+    const single = words.length === 1 && words[0].includes("{shark}");
+    if (single) {
+      // 只有一句且带 {shark}：整句打完后只改括号里的鲨鱼名，三条轮流
+      const [prefix, suffix] = words[0].split("{shark}");
+      const names = sharkNames();
+      const pre = document.createTextNode("");
+      const name = document.createTextNode("");
+      const suf = document.createTextNode("");
+      out.replaceChildren(pre, name, suf);
+      const full = prefix + names[0] + suffix;
+      if (reduced) {
+        out.textContent = full;
+      } else {
+        (async () => {
+          // 1. 从头打整句，光标跟在末尾
+          for (let n = 1; n <= full.length; n++) {
+            if (!alive()) return;
+            pre.data = full.slice(0, n);
+            await wait(90);
+          }
+          if (names.length < 2) return;
+          // 2. 把光标挪进括号里，之后只动鲨鱼名
+          pre.data = prefix;
+          name.data = names[0];
+          out.insertBefore(cursor, suf);
+          suf.data = suffix;
+          let i = 0;
+          while (alive()) {
+            await wait(2200);
+            for (let n = name.data.length - 1; n >= 0; n--) {
+              if (!alive()) return;
+              name.data = name.data.slice(0, n);
+              await wait(45);
+            }
+            await wait(300);
+            i = (i + 1) % names.length;
+            const next = names[i];
+            for (let n = 1; n <= next.length; n++) {
+              if (!alive()) return;
+              name.data = next.slice(0, n);
+              await wait(90);
+            }
+          }
+        })();
+      }
+    } else {
+      // 多句：逐句打出再删掉，循环
+      const fill = (s: string) => {
+        const names = sharkNames();
+        return s.replace("{shark}", names[Math.floor(Math.random() * names.length)]);
+      };
       if (reduced) {
         out.textContent = fill(words[0]);
       } else {
-        let w = 0;
-        let n = 0;
-        let deleting = false;
-        let word = "";
-        const step = () => {
-          // 每句开打时才决定鲨鱼名，保证背景已经挑好鲨鱼
-          if (!deleting && n === 0) word = fill(words[w]);
-          n += deleting ? -1 : 1;
-          out.textContent = word.slice(0, n);
-          let delay = deleting ? 40 : 90;
-          if (!deleting && n === word.length) {
-            if (words.length === 1) return; // 只有一句：打完停住，光标继续闪
-            deleting = true;
-            delay = 1800;
-          } else if (deleting && n === 0) {
-            deleting = false;
+        (async () => {
+          let w = 0;
+          while (alive()) {
+            const word = fill(words[w]);
+            for (let n = 1; n <= word.length; n++) {
+              if (!alive()) return;
+              out.textContent = word.slice(0, n);
+              await wait(90);
+            }
+            await wait(1800);
+            for (let n = word.length - 1; n >= 0; n--) {
+              if (!alive()) return;
+              out.textContent = word.slice(0, n);
+              await wait(40);
+            }
+            await wait(350);
             w = (w + 1) % words.length;
-            delay = 350;
           }
-          typeTimer = window.setTimeout(step, delay);
-        };
-        step();
+        })();
       }
     }
   }
