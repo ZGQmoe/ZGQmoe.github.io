@@ -14,6 +14,8 @@
   const KINDS: SharkSpec["kind"][] = ["greathammer", "hammerhead", "thresher", "tiger", "mako", "zebra", "nurse", "classic"];
   const count = innerWidth < 700 ? 2 : 3;
   const picked = [...KINDS].sort(() => Math.random() - 0.5).slice(0, count);
+  // 给首页打字机用：sealife.observing(...) 括号里显示的就是这几条
+  (window as any).__sharks = picked;
   const sharks: SharkSpec[] = picked.map((kind, i) => ({ kind, size: [1, 0.84, 0.72][i] }));
 
   const canvas = document.querySelector<HTMLCanvasElement>("canvas.ocean");

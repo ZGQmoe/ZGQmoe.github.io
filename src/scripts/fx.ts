@@ -96,6 +96,23 @@ document.addEventListener("astro:page-load", () => {
   });
 
   // 打字机
+  // 背景鲨鱼种类 → Swift 枚举风格的名字
+  const SHARK_CASE: Record<string, string> = {
+    greathammer: ".greatHammerhead",
+    hammerhead: ".hammerhead",
+    thresher: ".thresher",
+    tiger: ".tigerShark",
+    mako: ".mako",
+    zebra: ".zebraShark",
+    nurse: ".nurseShark",
+    classic: ".shark",
+  };
+  const fill = (s: string) => {
+    if (!s.includes("{shark}")) return s;
+    const seen: string[] = (window as any).__sharks || [];
+    const kind = seen.length ? seen[Math.floor(Math.random() * seen.length)] : "classic";
+    return s.replace("{shark}", SHARK_CASE[kind] || ".shark");
+  };
   clearTimeout(typeTimer);
   const tw = document.querySelector<HTMLElement>("[data-typewriter]");
   if (tw) {
@@ -103,13 +120,13 @@ document.addEventListener("astro:page-load", () => {
     const out = tw.querySelector<HTMLElement>(".tw-text");
     if (out && words.length) {
       if (reduced) {
-        out.textContent = words[0];
+        out.textContent = fill(words[0]);
       } else {
         let w = 0;
         let n = 0;
         let deleting = false;
+        let word = fill(words[0]);
         const step = () => {
-          const word = words[w];
           n += deleting ? -1 : 1;
           out.textContent = word.slice(0, n);
           let delay = deleting ? 40 : 90;
@@ -119,6 +136,7 @@ document.addEventListener("astro:page-load", () => {
           } else if (deleting && n === 0) {
             deleting = false;
             w = (w + 1) % words.length;
+            word = fill(words[w]);
             delay = 350;
           }
           typeTimer = window.setTimeout(step, delay);

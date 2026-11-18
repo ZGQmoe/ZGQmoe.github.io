@@ -9,6 +9,7 @@ import { SITE } from "../../config";
 
 const { recent, courses, projects, stats } = await homeData();
 const [main, ...rest] = projects;
+import { QUOTES } from "../../data/quotes";
 ---
 
 <Base ocean="full" title="版式 B · Bento">
@@ -33,7 +34,7 @@ const [main, ...rest] = projects;
 
     <a class="tile t-about spot reveal" href="/about/">
       <span class="label mono">About</span>
-      <p>{SITE.bio}</p>
+      <p>{QUOTES[0]}</p>
       <span class="go mono">关于我 <Icon name="arrow" size={14} /></span>
     </a>
 

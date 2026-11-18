@@ -1,6 +1,7 @@
 ---
 import Icon from "../Icon.astro";
 import { SITE, SOCIALS } from "../../config";
+import { QUOTES } from "../../data/quotes";
 
 interface Props {
   align?: "left" | "center";
@@ -17,9 +18,9 @@ const { align = "left", tall = true } = Astro.props;
       <span>{SITE.author}</span><span class="sep">｜</span><span class="grad-text">{SITE.title}</span>
     </h1>
     <p class="type mono" data-typewriter={JSON.stringify(SITE.typewriter)}>
-      <span class="prompt">&gt;</span> <span class="tw-text">{SITE.typewriter[0]}</span><span class="cursor">▍</span>
+      <span class="prompt">&gt;</span> <span class="tw-text"></span><span class="cursor">▍</span>
     </p>
-    <p class="bio">{SITE.bio}</p>
+    <p class="bio" data-quotes={JSON.stringify(QUOTES)}>{QUOTES[0]}</p>
     <div class="socials">
       {
         SOCIALS.map((s) => (
@@ -36,6 +37,16 @@ const { align = "left", tall = true } = Astro.props;
     <span class="arrow">↓</span>
   </a>
 </section>
+
+<script>
+  // 一句话简介：每次打开从句子库（src/data/quotes.ts）里随机抽一句
+  document.addEventListener("astro:page-load", () => {
+    const el = document.querySelector<HTMLElement>(".hero .bio[data-quotes]");
+    if (!el) return;
+    const qs: string[] = JSON.parse(el.dataset.quotes || "[]");
+    if (qs.length) el.textContent = qs[Math.floor(Math.random() * qs.length)];
+  });
+</script>
 
 <style>
   .hero {
