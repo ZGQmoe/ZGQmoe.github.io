@@ -73,3 +73,7 @@ npm run dev     # http://localhost:4321
 ## 致谢
 
 首页的 ASCII 鲨鱼改自 [stackedlol/ascii-sharks](https://github.com/stackedlol/ascii-sharks)（MIT），修改内容见 `src/lib/ocean/NOTICE.md`。
+
+## 学习路线
+
+本站的开发与学习记录见 [site-learning-path](https://github.com/ZGQmoe/site-learning-path)。
