@@ -353,7 +353,7 @@
       "blocks": 4,
       "due": "2026-12-03",
       "source": "Canvas Task 2 brief；code/EEEN20011_Project_Template",
-      "standard": "能现场演示并逐句解释代码",
+      "standard": "程序可编译、现场演示并解释关键代码；在考核 lab 结束前经 Turnitin 上传源代码",
       "kind": "cw",
       "fixed": "12/04 09:00 Group 02 的 W10 lab 现场考核"
     },
@@ -714,7 +714,7 @@
       "date": "2026-12-04",
       "time": "09:00–11:00",
       "course": "MCE",
-      "what": "Task 2 现场考核，占总评 14%（Group 02 的 W10 lab，按课表推算）",
+      "what": "Task 2 现场考核，占总评 14%；须在本组 lab 结束前经 Turnitin 上传源代码，现场解释程序（Group 02 的 12/04 09:00–11:00 按课表推算）",
       "kind": "lab"
     },
     {
