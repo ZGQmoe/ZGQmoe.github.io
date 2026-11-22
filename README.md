@@ -13,6 +13,7 @@ date: 2026-11-09
 category: learn       # learn 学习拾遗 · analysis 分析 · essay 杂文
 tags: [EEE, 电路]
 description: 一句话摘要（可选）
+cover: /images/xxx/cover.jpg   # 随笔页卡片的预览图（可选，不写用渐变占位）
 draft: false          # true 时只在本地显示
 ---
 

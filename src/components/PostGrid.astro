@@ -1,0 +1,151 @@
+---
+// 随笔页的卡片排版：3 列方形卡片，上面是预览图（frontmatter 的 cover），下面是标题和日期。
+// 没有 cover 的文章用渐变占位。
+import { CATEGORIES } from "../config";
+import { formatDate, readingTime, type Post } from "../utils/posts";
+
+interface Props {
+  posts: Post[];
+  empty?: string;
+}
+const { posts, empty = "还没有内容。" } = Astro.props;
+---
+
+{
+  posts.length === 0 ? (
+    <p class="empty">{empty}</p>
+  ) : (
+    <ul class="post-grid">
+      {posts.map((p) => (
+        <li data-category={p.data.category} data-tags={p.data.tags.join("|")}>
+          <a class="card" href={`/posts/${p.id}/`}>
+            <div class="thumb">
+              {p.data.cover ? (
+                <img src={p.data.cover} alt="" loading="lazy" decoding="async" />
+              ) : (
+                <span class="ph mono" aria-hidden="true">~/</span>
+              )}
+              <span class="cat mono">{CATEGORIES[p.data.category].label}</span>
+            </div>
+            <div class="meta">
+              <span class="title">
+                {p.data.title}
+                {p.data.draft && <span class="draft">草稿</span>}
+              </span>
+              <span class="sub mono">
+                <time datetime={p.data.date.toISOString()}>{formatDate(p.data.date)}</time>
+                <span> · 约 {readingTime(p.body)} 分钟</span>
+              </span>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .post-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  li[hidden] {
+    display: none;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: var(--fg);
+    background: var(--bg-raise);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    transition:
+      border-color 0.15s,
+      transform 0.15s;
+  }
+  .card:hover {
+    text-decoration: none;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .thumb {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--grad-1), var(--grad-2) 55%, var(--grad-3));
+  }
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s;
+  }
+  .card:hover .thumb img {
+    transform: scale(1.04);
+  }
+  .ph {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 40px;
+    font-weight: 600;
+  }
+  .cat {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 1px 8px;
+    font-size: 11px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 999px;
+    max-width: calc(100% - 16px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    backdrop-filter: blur(4px);
+  }
+  .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px 12px;
+  }
+  .title {
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card:hover .title {
+    color: var(--accent);
+  }
+  .sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .draft {
+    margin-left: 6px;
+    font-size: 12px;
+    color: #c2410c;
+  }
+  @media (max-width: 640px) {
+    .post-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+  }
+</style>

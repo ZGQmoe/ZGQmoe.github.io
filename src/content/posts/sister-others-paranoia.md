@@ -4,6 +4,7 @@ date: 2026-11-21
 category: analysis
 tags: [游戏, nyalra, 文字游戏]
 description: 趁 Steam 打折入手 nyalra 桑的《妹妹、他人、妄想症》，3 小时打通一个结局后的感想。有剧透。
+cover: /images/sister-others/cover.jpg
 draft: false
 ---
 

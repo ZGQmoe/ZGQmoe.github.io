@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import PostList from "../components/PostList.astro";
+import PostGrid from "../components/PostGrid.astro";
 import { byCategory, getPosts } from "../utils/posts";
 
 const posts = await getPosts(byCategory("analysis", "essay", "esp"));
@@ -34,7 +34,7 @@ const filters = [
     </p>
 
     <div class="list">
-      <PostList posts={posts} empty="还没有随笔。" />
+      <PostGrid posts={posts} empty="还没有随笔。" />
     </div>
   </div>
 </Base>

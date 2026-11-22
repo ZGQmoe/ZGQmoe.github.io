@@ -12,6 +12,8 @@ const posts = defineCollection({
     category: z.enum(["learn", "analysis", "essay", "esp"]),
     tags: z.array(z.string()).default([]),
     description: z.string().optional(),
+    // 卡片预览图（public/ 下的路径，如 /images/xxx/cover.jpg）；不写用渐变占位
+    cover: z.string().optional(),
     draft: z.boolean().default(false),
   }),
 });
