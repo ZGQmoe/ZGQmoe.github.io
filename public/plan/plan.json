@@ -421,7 +421,7 @@
       "blocks": 3,
       "due": "2026-11-24",
       "source": "Canvas Lab 1；Electric_Field_Mapping_Report_Updated.docx",
-      "standard": "对照报告要求逐项核对后提交",
+      "standard": "对照报告要求逐项核对；提交到 Canvas「EM Lab Report Group 2」",
       "kind": "cw",
       "fixed": "11-25 14:00 截止"
     },
@@ -670,11 +670,19 @@
       "kind": "report"
     },
     {
+      "id": "d1125-sns-simulink",
+      "date": "2026-11-25",
+      "time": "18:00",
+      "course": "SNS",
+      "what": "Simulink lab: frequency domain (version D) Canvas quiz（11/23 13:00 开放；Canvas 显示 0 points）",
+      "kind": "lab"
+    },
+    {
       "id": "d1125-em-report",
       "date": "2026-11-25",
       "time": "14:00",
       "course": "EM",
-      "what": "Lab 1 report (Group 02) 提交，占总评 10%",
+      "what": "Lab 1 report (Group 02)：提交到 Canvas「EM Lab Report Group 2」（不要交到旧的「Lab 1 report (Group 02)」），占总评 10%",
       "kind": "report"
     },
     {
