@@ -670,20 +670,20 @@
       "kind": "report"
     },
     {
-      "id": "d1125-sns-simulink",
-      "date": "2026-11-25",
-      "time": "18:00",
-      "course": "SNS",
-      "what": "Simulink lab: frequency domain (version D) Canvas quiz（11/23 13:00 开放；Canvas 显示 0 points）",
-      "kind": "lab"
-    },
-    {
       "id": "d1125-em-report",
       "date": "2026-11-25",
       "time": "14:00",
       "course": "EM",
       "what": "Lab 1 report (Group 02)：提交到 Canvas「EM Lab Report Group 2」（不要交到旧的「Lab 1 report (Group 02)」），占总评 10%",
       "kind": "report"
+    },
+    {
+      "id": "d1125-sns-simulink",
+      "date": "2026-11-25",
+      "time": "18:00",
+      "course": "SNS",
+      "what": "Simulink lab: frequency domain (version D) Canvas quiz（11/23 13:00 开放；Canvas 显示 0 points）",
+      "kind": "lab"
     },
     {
       "id": "d1127-sns-lab",
